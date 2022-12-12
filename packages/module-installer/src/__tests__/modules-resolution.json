@@ -1,0 +1,6 @@
+{
+  "test-module": "/path/to/test-module/index.js",
+  "test-module/package.json": "/path/to/test-module/package.json",
+  "already-installed-module": "/path/to/already-installed-module/index.js",
+  "already-installed-module/package.json": "/path/to/already-installed-module/package.json"
+}

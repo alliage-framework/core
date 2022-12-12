@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+HEAD_VERSION=$(git show HEAD:lerna.json | jq -r .version)
+CURRENT_VERSION=$(cat lerna.json | jq -r .version)
+
+if [ $HEAD_VERSION != $CURRENT_VERSION ]; then
+  lerna exec -- sh "\$LERNA_ROOT_PATH/scripts/update-peer-deps.sh"
+fi
+
+lerna exec -- sh "\$LERNA_ROOT_PATH/scripts/update-manifest.sh"
+
+git add .
