@@ -1,0 +1,39 @@
+{
+  "name": "@alliage/di",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Dependency injection module for Alliage",
+  "files": [
+    "README.md",
+    "dist",
+    "LICENSE"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alliage-framework/core.git"
+  },
+  "author": "bo.lebon@gmail.com",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/alliage-framework/core/issues"
+  },
+  "homepage": "https://github.com/alliage-framework/core#readme",
+  "alliageManifest": {
+    "type": "module",
+    "dependencies": []
+  },
+  "peerDependencies": {
+    "@alliage/framework": "^1.0.0-beta.2"
+  },
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  }
+}

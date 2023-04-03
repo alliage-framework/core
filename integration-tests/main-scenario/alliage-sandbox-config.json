@@ -1,0 +1,18 @@
+{
+  "command": "ts-node -P <projectRoot>/tsconfig.json -T",
+  "copyFiles": ["<scenarioRoot>/src", "<scenarioRoot>/config"],
+  "linkModules": {
+    "@alliage/di": "<projectRoot>/packages/dependency-injection",
+    "@alliage/lifecycle": "<projectRoot>/packages/lifecycle",
+    "@alliage/process-manager": "<projectRoot>/packages/process-manager",
+    "@alliage/config-loader": "<projectRoot>/packages/configuration-loader",
+    "@alliage/module-installer": "<projectRoot>/packages/module-installer",
+    "@alliage/service-loader": "<projectRoot>/packages/service-loader",
+    "@alliage/parameters-loader": "<projectRoot>/packages/parameters-loader",
+    "@alliage/builder": "<projectRoot>/packages/builder",
+    "@alliage/error-handler": "<projectRoot>/packages/error-handler",
+    "@alliage/events-listener-loader": "<projectRoot>/packages/events-listener-loader",
+    "@alliage/core": "<projectRoot>/packages/core"
+  },
+  "alliageModules": ["@alliage/module-installer", "@alliage/lifecycle", "@alliage/di"]
+}

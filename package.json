@@ -1,0 +1,54 @@
+{
+  "name": "root",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "lerna exec --include-dependencies --stream -- sh \\$LERNA_ROOT_PATH/scripts/build.sh",
+    "clean": "lerna exec --include-dependencies --stream -- rm -rf dist",
+    "lint": "eslint . --ext .js --ext .ts",
+    "lint:fix": "yarn lint --silent -- --fix",
+    "test:unit": "NODE_ENV=test jest --maxWorkers=2 --coverage",
+    "test:integration": "NODE_ENV=test jest --maxWorkers=2 --rootDir=. -c ./integration-tests/jest.config.js",
+    "test": "yarn lint && yarn test:unit && yarn test:integration",
+    "release": "lerna version --conventional-commits --yes",
+    "publish": "lerna publish from-package --yes",
+    "sandbox": "ts-node test-utils/sandbox/index.ts",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@alliage/framework": "^1.0.0-beta.2",
+    "@alliage/sandbox": "^1.0.0-beta.1",
+    "@types/fs-extra": "8.1.0",
+    "@types/glob": "^7.1.1",
+    "@types/jest": "^24.0.6",
+    "@types/lodash.get": "^4.4.6",
+    "@types/node": "^13.1.6",
+    "@types/yaml": "^1.2.0",
+    "@types/yargs": "^15.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "@typescript-eslint/typescript-estree": "^5.57.0",
+    "eslint": "^8.37.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-prettier": "^3.1.1",
+    "husky": "^8.0.2",
+    "jest": "^24.1.0",
+    "lerna": "^6.0.3",
+    "prettier": "^1.19.1",
+    "ts-jest": "^24.0.0",
+    "ts-node": "8.9.1",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "fs-extra": "9.0.0",
+    "glob": "^7.1.6",
+    "lodash.get": "^4.4.2",
+    "yaml": "^1.9.2"
+  }
+}

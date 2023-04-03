@@ -1,0 +1,48 @@
+{
+  "name": "@alliage/core",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Core features compound for Alliage",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alliage-framework/core.git"
+  },
+  "author": "bo.lebon@gmail.com",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/alliage-framework/core/issues"
+  },
+  "homepage": "https://github.com/alliage-framework/core#readme",
+  "alliageManifest": {
+    "type": "compound",
+    "dependencies": [
+      "@alliage/builder",
+      "@alliage/config-loader",
+      "@alliage/di",
+      "@alliage/error-handler",
+      "@alliage/events-listener-loader",
+      "@alliage/lifecycle",
+      "@alliage/module-installer",
+      "@alliage/parameters-loader",
+      "@alliage/process-manager",
+      "@alliage/service-loader"
+    ]
+  },
+  "peerDependencies": {
+    "@alliage/framework": "^1.0.0-beta.2"
+  },
+  "dependencies": {
+    "@alliage/builder": "^0.0.0",
+    "@alliage/config-loader": "^0.0.0",
+    "@alliage/di": "^0.0.0",
+    "@alliage/error-handler": "^0.0.0",
+    "@alliage/events-listener-loader": "^0.0.0",
+    "@alliage/lifecycle": "^0.0.0",
+    "@alliage/module-installer": "^0.0.0",
+    "@alliage/parameters-loader": "^0.0.0",
+    "@alliage/process-manager": "^0.0.0",
+    "@alliage/service-loader": "^0.0.0"
+  }
+}

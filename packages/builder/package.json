@@ -1,0 +1,63 @@
+{
+  "name": "@alliage/builder",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Builder module for Alliage",
+  "files": [
+    "README.md",
+    "dist",
+    "base-files",
+    "LICENSE"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alliage-framework/core.git"
+  },
+  "author": "bo.lebon@gmail.com",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/alliage-framework/core/issues"
+  },
+  "homepage": "https://github.com/alliage-framework/core#readme",
+  "alliageManifest": {
+    "type": "module",
+    "dependencies": [
+      "@alliage/config-loader",
+      "@alliage/di",
+      "@alliage/lifecycle",
+      "@alliage/module-installer"
+    ],
+    "environments": [
+      "development"
+    ],
+    "installationProcedures": {
+      "copyFiles": [
+        [
+          "base-files/config.yaml",
+          "config/builder.yaml"
+        ]
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@alliage/framework": "^1.0.0-beta.2",
+    "@alliage/config-loader": "^0.0.0",
+    "@alliage/di": "^0.0.0",
+    "@alliage/lifecycle": "^0.0.0",
+    "@alliage/module-installer": "^0.0.0"
+  },
+  "devDependencies": {
+    "@alliage/config-loader": "^0.0.0",
+    "@alliage/di": "^0.0.0",
+    "@alliage/lifecycle": "^0.0.0",
+    "@alliage/module-installer": "^0.0.0"
+  }
+}

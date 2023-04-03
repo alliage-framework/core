@@ -1,0 +1,12 @@
+{
+  "command": {
+    "version": {
+      "message": "chore(release): publish %s"
+    },
+    "bootstrap": {
+      "npmClientArgs": ["--no-package-lock"]
+    }
+  },
+  "version": "0.0.0",
+  "useWorkspaces": true
+}
