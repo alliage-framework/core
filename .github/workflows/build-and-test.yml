@@ -1,0 +1,45 @@
+name: Build and test
+on:
+  workflow_call:
+    inputs:
+      skipTests:
+        required: false
+        type: boolean
+        default: false
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'yarn'
+          node-version: latest
+      - name: Install dependencies
+        run: yarn
+      - name: Bootstrap
+        run: npx lerna bootstrap --no-ci
+      - name: Build
+        run: yarn build
+      - name: Run unit tests
+        if: inputs.skipTests == false
+        run: yarn test:unit
+      - name: Upload coverage
+        if: inputs.skipTests == false
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+          verbose: true
+      - name: Run integration tests
+        if: inputs.skipTests == false
+        run: yarn test:integration
+      - name: Create build archive
+        run: |
+          mkdir artifacts
+          tar -zcf artifacts/build.tar.gz node_modules packages/**/dist packages/**/node_modules
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: artifacts
+
+
