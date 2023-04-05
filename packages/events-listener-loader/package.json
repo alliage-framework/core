@@ -1,6 +1,6 @@
 {
   "name": "@alliage/events-listener-loader",
-  "version": "0.0.0",
+  "version": "0.1.0-beta.0",
   "publishConfig": {
     "access": "public"
   },
@@ -25,14 +25,14 @@
   "homepage": "https://github.com/alliage-framework/core#readme",
   "peerDependencies": {
     "@alliage/framework": "^1.0.0-beta.2",
-    "@alliage/di": "^0.0.0",
-    "@alliage/lifecycle": "^0.0.0",
-    "@alliage/service-loader": "^0.0.0"
+    "@alliage/di": "^0.1.0-beta.0",
+    "@alliage/lifecycle": "^0.1.0-beta.0",
+    "@alliage/service-loader": "^0.1.0-beta.0"
   },
   "devDependencies": {
-    "@alliage/di": "^0.0.0",
-    "@alliage/lifecycle": "^0.0.0",
-    "@alliage/service-loader": "^0.0.0"
+    "@alliage/di": "^0.1.0-beta.0",
+    "@alliage/lifecycle": "^0.1.0-beta.0",
+    "@alliage/service-loader": "^0.1.0-beta.0"
   },
   "alliageManifest": {
     "type": "module",
