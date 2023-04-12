@@ -1,6 +1,6 @@
 {
   "name": "@alliage/core",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "publishConfig": {
     "access": "public"
   },
@@ -34,15 +34,15 @@
     "@alliage/framework": "^1.0.0-beta.2"
   },
   "dependencies": {
-    "@alliage/builder": "^0.1.0-beta.0",
-    "@alliage/config-loader": "^0.1.0-beta.0",
-    "@alliage/di": "^0.1.0-beta.0",
-    "@alliage/error-handler": "^0.1.0-beta.0",
-    "@alliage/events-listener-loader": "^0.1.0-beta.0",
-    "@alliage/lifecycle": "^0.1.0-beta.0",
-    "@alliage/module-installer": "^0.1.0-beta.0",
-    "@alliage/parameters-loader": "^0.1.0-beta.0",
-    "@alliage/process-manager": "^0.1.0-beta.0",
-    "@alliage/service-loader": "^0.1.0-beta.0"
+    "@alliage/builder": "^0.1.0-beta.1",
+    "@alliage/config-loader": "^0.1.0-beta.1",
+    "@alliage/di": "^0.1.0-beta.1",
+    "@alliage/error-handler": "^0.1.0-beta.1",
+    "@alliage/events-listener-loader": "^0.1.0-beta.1",
+    "@alliage/lifecycle": "^0.1.0-beta.1",
+    "@alliage/module-installer": "^0.1.0-beta.1",
+    "@alliage/parameters-loader": "^0.1.0-beta.1",
+    "@alliage/process-manager": "^0.1.0-beta.1",
+    "@alliage/service-loader": "^0.1.0-beta.1"
   }
 }
