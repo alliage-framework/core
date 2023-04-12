@@ -81,3 +81,4 @@ export default class BuilderModule extends AbstractLifeCycleAwareModule {
 
 export * from './config';
 export * from './event';
+export * from './tasks';
