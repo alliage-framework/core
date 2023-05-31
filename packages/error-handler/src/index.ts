@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { AbstractModule } from '@alliage/framework';
+import { AbstractModule, Arguments, PrimitiveContainer } from '@alliage/framework';
 
 const EXCLUDED_PROPERTIES = ['message', 'stack'];
 
@@ -27,8 +27,10 @@ export default class ErrorHandlerModule extends AbstractModule {
     }
   };
 
-  handleInit = () => {
-    process.on('unhandledRejection', (error) => this.displayError(error));
-    process.on('uncaughtException', (error) => this.displayError(error));
+  handleInit = (_args: Arguments, _env: string, container: PrimitiveContainer) => {
+    if (container.get<boolean>('is_main_script') === true) {
+      process.on('unhandledRejection', (error) => this.displayError(error));
+      process.on('uncaughtException', (error) => this.displayError(error));
+    }
   };
 }

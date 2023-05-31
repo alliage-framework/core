@@ -18,7 +18,7 @@ describe('lifecycle', () => {
     jest.clearAllMocks();
   });
   describe('LifecycleModule', () => {
-    const pc = new PrimitiveContainer();
+    const pc = new PrimitiveContainer({});
     const emitMock = jest.spyOn(EventManager.prototype, 'emit');
     const serviceContainerMock = {
       freeze: jest.fn(),

@@ -19,7 +19,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@alliage/framework": "^1.0.0-beta.2",
+    "@alliage/framework": "^1.0.0-beta.3",
     "@alliage/sandbox": "^1.0.0-beta.1",
     "@types/fs-extra": "8.1.0",
     "@types/glob": "^7.1.1",
