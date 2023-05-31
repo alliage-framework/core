@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@alliage/framework@^1.0.0-beta.2":
-  version "1.0.0-beta.2"
-  resolved "https://registry.npmjs.org/@alliage/framework/-/framework-1.0.0-beta.2.tgz#045a882346025306e154eeb040bfe806a0757edb"
-  integrity sha512-qwH1/C84YtPQK3RN6IH1fvbYmxeIzUCv/l+iRxIN4R/ZRLezl2gzTq4k1p3i5WvDuYbgCMmSXbgV2vmD/Ii6Ww==
+"@alliage/framework@^1.0.0-beta.3":
+  version "1.0.0-beta.3"
+  resolved "https://registry.npmjs.org/@alliage/framework/-/framework-1.0.0-beta.3.tgz#23b6e09ec4f0a400a303cc485b3ac17e46ce2f49"
+  integrity sha512-uq4rqAdp9b9ecDwykXAaIo6RGnfaTYVeZf3Z89Cf3CjCSZjK1B2VD6ruxw0NVZHqq/gFcu4bnTZ/T91TjMH1+A==
   dependencies:
     yargs "^15.1.0"
 

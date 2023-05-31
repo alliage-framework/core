@@ -31,7 +31,7 @@ describe('lifecycle/module', () => {
     }
 
     const lcaModule = new LifeCycleAwareModule();
-    const pc = new PrimitiveContainer();
+    const pc = new PrimitiveContainer({});
     const sc = new ServiceContainer();
     const eventManagerMock = {
       on: jest.fn(),

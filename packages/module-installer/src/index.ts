@@ -61,7 +61,7 @@ export default class ModuleInstallerModule extends AbstractLifeCycleAwareModule 
     env: string,
     phases: INSTALLATION_PHASES[] = [],
   ) {
-    const installScript = new InstallScript();
+    const installScript = new InstallScript({ is_main_script: false });
     return installScript.execute(
       Arguments.create(
         { script: 'install', env },

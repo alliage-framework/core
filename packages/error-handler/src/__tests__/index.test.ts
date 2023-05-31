@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { Arguments, PrimitiveContainer } from '@alliage/framework';
 import ErrorHandlerModule from '..';
 
 describe('error-handler', () => {
@@ -23,7 +24,11 @@ describe('error-handler', () => {
       let consoleErrorMock: jest.SpyInstance;
 
       beforeAll(async () => {
-        await module.handleInit();
+        await module.handleInit(
+          Arguments.create(),
+          'test',
+          new PrimitiveContainer({ is_main_script: true }),
+        );
       });
 
       beforeEach(() => {
@@ -138,6 +143,21 @@ describe('error-handler', () => {
           1,
           chalk.white.bgRed(`${chalk.underline.bold('Error')}: An unknown error occured`),
         );
+      });
+
+      it('should not listen to errors if the script is a subscript', async () => {
+        const onMock = jest.spyOn(process, 'on');
+        const moduleInSubscript = new ErrorHandlerModule();
+
+        await moduleInSubscript.handleInit(
+          Arguments.create(),
+          'test',
+          new PrimitiveContainer({ is_main_script: false }),
+        );
+
+        expect(onMock).not.toHaveBeenCalled();
+
+        onMock.mockRestore();
       });
     });
   });
