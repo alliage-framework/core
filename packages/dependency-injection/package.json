@@ -1,6 +1,6 @@
 {
   "name": "@alliage/di",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "publishConfig": {
     "access": "public"
   },
@@ -31,7 +31,7 @@
     "dependencies": []
   },
   "peerDependencies": {
-    "@alliage/framework": "^1.0.0-beta.2"
+    "@alliage/framework": "^1.0.0-beta.3"
   },
   "dependencies": {
     "lodash.get": "^4.4.2"
