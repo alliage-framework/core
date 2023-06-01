@@ -42,7 +42,7 @@ export function validate(
   manifest: object,
   installationProceduresSchema: object = {},
 ) {
-  const ajv = new Ajv({ allErrors: true, strictKeywords: true });
+  const ajv = new Ajv({ allErrors: true, strictKeywords: true, logger: false });
   const res = ajv.validate(
     {
       ...schema,

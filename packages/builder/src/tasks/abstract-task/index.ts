@@ -31,7 +31,7 @@ export class UnknownTaskError extends Error {
 }
 
 export function validateParams(taskName: string, schema: any, params: any) {
-  const ajv = new Ajv({ allErrors: true, strictKeywords: true });
+  const ajv = new Ajv({ allErrors: true, strictKeywords: true, logger: false });
   const res = ajv.validate(schema, params);
   if (!res) {
     throw new TaskParamsValidationError(taskName, ajv.errors);
