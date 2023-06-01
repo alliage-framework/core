@@ -1,6 +1,6 @@
 {
   "name": "@alliage/service-loader",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "publishConfig": {
     "access": "public"
   },
@@ -48,16 +48,16 @@
     "glob": "^7.1.6"
   },
   "devDependencies": {
-    "@alliage/config-loader": "^0.1.0-beta.2",
-    "@alliage/di": "^0.1.0-beta.2",
-    "@alliage/lifecycle": "^0.1.0-beta.2",
-    "@alliage/module-installer": "^0.1.0-beta.2"
+    "@alliage/config-loader": "^0.1.0-beta.3",
+    "@alliage/di": "^0.1.0-beta.3",
+    "@alliage/lifecycle": "^0.1.0-beta.3",
+    "@alliage/module-installer": "^0.1.0-beta.3"
   },
   "peerDependencies": {
     "@alliage/framework": "^1.0.0-beta.3",
-    "@alliage/config-loader": "^0.1.0-beta.2",
-    "@alliage/di": "^0.1.0-beta.2",
-    "@alliage/lifecycle": "^0.1.0-beta.2",
-    "@alliage/module-installer": "^0.1.0-beta.2"
+    "@alliage/config-loader": "^0.1.0-beta.3",
+    "@alliage/di": "^0.1.0-beta.3",
+    "@alliage/lifecycle": "^0.1.0-beta.3",
+    "@alliage/module-installer": "^0.1.0-beta.3"
   }
 }
