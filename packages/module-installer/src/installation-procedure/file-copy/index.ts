@@ -1,5 +1,5 @@
 import path from 'path';
-import glob from 'glob';
+import { glob} from 'glob';
 import fse from 'fs-extra';
 
 import { EventManager } from '@alliage/lifecycle';
@@ -61,15 +61,7 @@ export class FileCopyInstallationProcedure extends AbstractInstallationProcedure
       const computedModulePath = beforeCopyAllEvent.getModulePath();
       await Promise.all(
         beforeCopyAllEvent.getFilesToCopy().map(async ([source, destination]) => {
-          const files: string[] = await new Promise((resolve, reject) => {
-            glob(`${computedModulePath}/${source}`, (err, matches) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(matches);
-            });
-          });
+          const files = await glob(`${computedModulePath}/${source}`);
           await Promise.all(
             files.map(async (sourceFile) => {
               const absoluteDestination = path.resolve(destination);

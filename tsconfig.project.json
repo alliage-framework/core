@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./packages",
+    "rootDir": "./packages"
+  },
+  "exclude": [
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/integration-tests/**",
+    "vitest.config.ts"
+  ]
+}

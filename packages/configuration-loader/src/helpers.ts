@@ -46,7 +46,7 @@ export function injectEnvVariables(configFilePath: string, config: any, path: st
       } catch (e) {
         throw new UnprocessableEnvVariableError(
           `Failed to process env variable at '${path.join('.')}' in '${configFilePath}':\n${
-            e.message
+            (e as Error).message
           }`,
         );
       }

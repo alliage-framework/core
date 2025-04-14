@@ -1,5 +1,5 @@
 import path from 'path';
-import glob from 'glob';
+import { glob } from 'glob';
 
 import { Dependency } from '@alliage/di';
 import {
@@ -47,23 +47,11 @@ export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
 
     await Promise.all(
       paths.map(async (pattern) => {
-        const files: string[] = await new Promise((resolve, reject) => {
-          glob(
-            pattern,
-            {
-              cwd: path.resolve(basePath),
-              absolute: true,
-              nodir: true,
-              ignore: exclude,
-            },
-            (err, matches) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(matches);
-            },
-          );
+        const files = await glob(pattern, {
+          cwd: path.resolve(basePath),
+          absolute: true,
+          nodir: true,
+          ignore: exclude as string[],
         });
         await Promise.all(
           files.map(async (file) => {

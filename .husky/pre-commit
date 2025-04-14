@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 HEAD_VERSION=$(git show HEAD:lerna.json | jq -r .version)
 CURRENT_VERSION=$(cat lerna.json | jq -r .version)
 
