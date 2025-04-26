@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import {
   SERVICE_LOADER_EVENTS,
   ServiceLoaderBeforeAllEvent,
@@ -225,4 +227,4 @@ describe('service-loader/events', () => {
       });
     });
   });
-});
+}); 

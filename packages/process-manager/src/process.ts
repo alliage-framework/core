@@ -11,14 +11,14 @@ export enum SIGNAL {
 
 export interface SignalPayload {
   error?: Error;
-  reason?: {} | null;
-  promise?: Promise<any>;
+  reason?: unknown;
+  promise?: Promise<unknown>;
 }
 
 export const SUCCESSFUL_SIGNALS = [SIGNAL.SIGINT, SIGNAL.SIGTERM, SIGNAL.SUCCESS_SHUTDOWN];
 
 export abstract class AbstractProcess {
-  private shutdownPromiseResolver?: Function;
+  private shutdownPromiseResolver?: (success: boolean) => void;
 
   abstract getName(): string;
 

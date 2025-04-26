@@ -8,6 +8,8 @@ export enum DEPENDENCY {
 }
 
 export type Constructor = {
+  // Necessary for representing any constructor
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any): any;
 };
 
@@ -18,7 +20,7 @@ export interface ServiceDependency {
 
 export interface ParameterDependency {
   type: DEPENDENCY.PARAMETER;
-  getter: (parameters: object) => any;
+  getter: (parameters: object) => unknown;
 }
 
 export interface InstanceOfDependency {
@@ -44,7 +46,7 @@ export function service(name: string): ServiceDependency {
   };
 }
 
-export type ParameterGetter = (parameters: object) => any;
+export type ParameterGetter = (parameters: object) => unknown;
 
 export function parameter(path: string | ParameterGetter): ParameterDependency {
   let getter: ParameterGetter;

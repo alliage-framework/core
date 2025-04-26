@@ -4,7 +4,7 @@ import { ConfigurationSchemaValidationError } from '.';
 
 export function validate(schema: string | boolean | object) {
   const ajv = new Ajv({ allErrors: true, strictSchema: true, logger: false });
-  return function validator(configPath: string, config: any) {
+  return function validator(configPath: string, config: unknown) {
     const configCopy = JSON.parse(JSON.stringify(config));
     const valid = ajv.validate(schema, configCopy);
     if (!valid) {

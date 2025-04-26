@@ -7,6 +7,7 @@ import {
 } from '../event';
 import { AbstractTask } from '../tasks';
 import { Config } from '../config';
+import { describe, it, expect } from 'vitest';
 
 describe('builder/events', () => {
   class TestTask extends AbstractTask {
@@ -49,7 +50,8 @@ describe('builder/events', () => {
           test_task: testTask,
         });
         expect(() => {
-          (event.getTasks() as any).test = new TestTask();
+          // @ts-expect-error - tasks are frozen
+          event.getTasks().test = new TestTask();
         }).toThrow();
       });
     });
@@ -98,7 +100,8 @@ describe('builder/events', () => {
           test_task: testTask,
         });
         expect(() => {
-          (event.getTasks() as any).test = new TestTask();
+          // @ts-expect-error - tasks are frozen
+          event.getTasks().test = new TestTask();
         }).toThrow();
       });
     });
@@ -144,6 +147,7 @@ describe('builder/events', () => {
         expect(event.getParams()).toEqual({ test: 42 });
 
         expect(() => {
+          // @ts-expect-error - params are frozen
           event.getParams().test = 24;
         });
       });
@@ -219,4 +223,4 @@ describe('builder/events', () => {
       });
     });
   });
-});
+}); 

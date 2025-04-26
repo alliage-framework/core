@@ -10,6 +10,7 @@ import {
   ConfigPostFileLoadEvent,
   ConfigPostLoadEvent,
 } from '../events';
+import { describe, it, expect } from 'vitest';
 
 describe('configuration-loader/events', () => {
   describe('ConfigPreloadEvent', () => {
@@ -166,7 +167,7 @@ describe('configuration-loader/events', () => {
     });
 
     describe('#getFilePath', () => {
-      it('should return the file name', () => {
+      it('should return the file path', () => {
         expect(event.getFilePath()).toEqual('/config/path/dummyFile.yml');
       });
     });
@@ -319,4 +320,4 @@ describe('configuration-loader/events', () => {
       });
     });
   });
-});
+}); 

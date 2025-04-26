@@ -1,6 +1,7 @@
 import { AbstractWritableEvent } from '@alliage/lifecycle';
 
 import { Manifest } from './schemas/manifest';
+import { JSONSchema } from 'json-schema-to-ts';
 
 export enum INSTALLATION_EVENTS {
   PHASES_INIT = '@module-installer/EVENTS/BEFORE_COPY_ALL',
@@ -51,7 +52,7 @@ export class InstallationPhasesInitEvent extends AbstractWritableEvent<
 export interface InstallationPhaseEventPayload {
   moduleName: string;
   modulePath: string;
-  packageInfo: any;
+  packageInfo: Record<string, unknown>;
   manifest: Manifest;
   currentPhase: string;
   nextPhases: string[];
@@ -65,7 +66,7 @@ export class InstallationPhaseStartEvent extends AbstractWritableEvent<
   constructor(
     moduleName: string,
     modulePath: string,
-    packageInfo: any,
+    packageInfo: Record<string, unknown>,
     manifest: Manifest,
     currentPhase: string,
     nextPhases: string[],
@@ -133,7 +134,7 @@ export class InstallationPhaseEndEvent extends AbstractWritableEvent<
   constructor(
     moduleName: string,
     modulePath: string,
-    packageInfo: any,
+    packageInfo: Record<string, unknown>,
     manifest: Manifest,
     currentPhase: string,
     nextPhases: string[],
@@ -195,7 +196,7 @@ export class InstallationPhaseEndEvent extends AbstractWritableEvent<
       currentPhase,
       nextPhases,
       env,
-    );
+    ) as [INSTALLATION_EVENTS.PHASE_END, InstallationPhaseEndEvent];
   }
 }
 
@@ -204,7 +205,7 @@ export interface InstallationSchemaValidationEventPayload {
   currentPhase: string;
   nextPhases: readonly string[];
   manifest: Manifest;
-  extendedPropertiesSchemas: any;
+  extendedPropertiesSchemas: Record<string, JSONSchema>;
   env: string;
 }
 
@@ -217,7 +218,7 @@ export class InstallationSchemaValidationEvent extends AbstractWritableEvent<
     currentPhase: string,
     nextPhases: readonly string[],
     manifest: Manifest,
-    extendedPropertiesSchemas: any,
+    extendedPropertiesSchemas: Record<string, JSONSchema>,
     env: string,
   ) {
     super(INSTALLATION_EVENTS.SCHEMA_VALIDATION, {
@@ -254,7 +255,7 @@ export class InstallationSchemaValidationEvent extends AbstractWritableEvent<
     return this.getPayload().env;
   }
 
-  setExtendedPropertiesSchema(extendedPropertiesSchemas: object) {
+  setExtendedPropertiesSchema(extendedPropertiesSchemas: Record<string, JSONSchema>) {
     this.getWritablePayload().extendedPropertiesSchemas = extendedPropertiesSchemas;
     return this;
   }

@@ -57,7 +57,10 @@ export class ShellTaskSuccessEvent extends AbstractEvent<
   }
 
   static getParams(command: string, successOutput: string, errorOutput: string) {
-    return super.getParams(command, successOutput, errorOutput);
+    return super.getParams(command, successOutput, errorOutput) as [
+      BUILDER_SHELL_TASK_EVENTS.SUCCESS,
+      ShellTaskSuccessEvent,
+    ];
   }
 }
 
@@ -83,6 +86,6 @@ export class ShellTaskErrorEvent extends AbstractEvent<
   }
 
   static getParams(command: string, error: CommandError) {
-    return super.getParams(command, error);
+    return super.getParams(command, error) as [BUILDER_SHELL_TASK_EVENTS.ERROR, ShellTaskErrorEvent];
   }
 }

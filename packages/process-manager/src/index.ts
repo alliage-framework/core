@@ -1,4 +1,4 @@
-import { ArgumentsParser, CommandBuilder } from '@alliage/framework';
+import { ArgumentParserValidationError, Arguments, ArgumentsParser, CommandBuilder } from '@alliage/framework';
 
 import {
   RUN_EVENTS,
@@ -35,23 +35,32 @@ export default class ProcessManagerModule extends AbstractLifeCycleAwareModule {
         new Map<string, AbstractProcess>(),
       );
 
-    const parsedArgs = ArgumentsParser.parse(
-      CommandBuilder.create()
-        .setDescription('Runs a process')
+    let parsedArgs: Arguments;
+    try {
+      parsedArgs = await ArgumentsParser.parse(
+        CommandBuilder.create()
+          .setDescription('Runs a process')
         .addArgument('process', {
           describe: 'The process to run',
           type: 'string',
           choices: [...processes.keys()],
         }),
-      event.getArguments(),
-    );
+        event.getArguments(),
+        { exitOnFailure: false },
+      );
+    } catch (error) {
+      if (error instanceof ArgumentParserValidationError) {
+        console.error(error.help);
+        process.exit(1);
+        return;
+        // This case is not simulatable
+        /* v8 ignore next 3 */
+      }
+      throw error;
+    }
 
     const processName = parsedArgs.get('process');
-
     const currentProcess = <AbstractProcess>processes.get(processName);
-    if (!currentProcess) {
-      return;
-    }
 
     const config = CommandBuilder.create();
     await eventManager.emit(...PreConfigureEvent.getParams(currentProcess, config, event.getEnv()));
@@ -60,7 +69,7 @@ export default class ProcessManagerModule extends AbstractLifeCycleAwareModule {
       ...PostConfigureEvent.getParams(currentProcess, config, event.getEnv()),
     );
 
-    const processArgs = ArgumentsParser.parse(config, parsedArgs);
+    const processArgs = await ArgumentsParser.parse(config, parsedArgs);
 
     const preExecuteEvent = new PreExecuteEvent(currentProcess, processArgs, event.getEnv());
     await eventManager.emit(preExecuteEvent.getType(), preExecuteEvent);
@@ -93,7 +102,7 @@ export default class ProcessManagerModule extends AbstractLifeCycleAwareModule {
     process.on('uncaughtException', (error: Error) =>
       handleStop(SIGNAL.UNCAUGHT_EXCEPTION, { error }),
     );
-    process.on('unhandledRejection', (reason, promise: Promise<any>) =>
+    process.on('unhandledRejection', (reason, promise: Promise<unknown>) =>
       handleStop(SIGNAL.UNHANDLED_REJECTION, { reason, promise }),
     );
 

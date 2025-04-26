@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { AbstractInstallationProcedure } from '..';
 
 describe('module-installer/installation-procedure', () => {
@@ -13,8 +15,8 @@ describe('module-installer/installation-procedure', () => {
     const procedure = new InstallationProcedure();
     describe('#getSchema', () => {
       it('should return an empty object when not overriden', () => {
-        expect(procedure.getSchema()).toEqual({});
+        expect(procedure.getParamsSchema()).toEqual({});
       });
     });
   });
-});
+}); 

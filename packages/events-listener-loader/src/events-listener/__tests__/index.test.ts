@@ -1,4 +1,5 @@
 import { AbstractEventsListener } from '..';
+import { describe, it, expect } from 'vitest';
 
 describe('events-listener-loader/events-listener', () => {
   describe('AbstractEventListenerLoader', () => {
@@ -12,4 +13,4 @@ describe('events-listener-loader/events-listener', () => {
       });
     });
   });
-});
+}); 

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { MODULE_TYPE, validate } from '../manifest';
 import { ManifestValidationError } from '..';
 
@@ -39,16 +41,16 @@ describe('module-installer/schemas/manifest', () => {
       expect(error.moduleName).toEqual('test-module');
       expect(error.errors).toEqual([
         {
-          dataPath: '.type',
+          instancePath: '/type',
           keyword: 'enum',
-          message: 'should be equal to one of the allowed values',
+          message: 'must be equal to one of the allowed values',
           params: { allowedValues: ['module', 'compound'] },
           schemaPath: '#/properties/type/enum',
         },
         {
-          dataPath: '.installationProcedures.test',
+          instancePath: '/installationProcedures/test',
           keyword: 'type',
-          message: 'should be number',
+          message: 'must be number',
           params: {
             type: 'number',
           },
@@ -57,4 +59,4 @@ describe('module-installer/schemas/manifest', () => {
       ]);
     });
   });
-});
+}); 

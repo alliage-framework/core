@@ -1,5 +1,6 @@
 import { validate } from '../json-schema';
 import { ConfigurationSchemaValidationError } from '..';
+import { describe, it, expect } from 'vitest';
 
 describe('configuration-loader/validators/json-schema', () => {
   const schema = {
@@ -51,25 +52,25 @@ describe('configuration-loader/validators/json-schema', () => {
     expect(error.message).toEqual("The configuration schema is invalid in '/conf/file/path'");
     expect(error.errors).toEqual([
       {
-        dataPath: '.dummyString',
+        instancePath: '/dummyString',
         keyword: 'type',
-        message: 'should be string',
+        message: 'must be string',
         params: { type: 'string' },
         schemaPath: '#/properties/dummyString/type',
       },
       {
-        dataPath: '.dummyArray[1]',
+        instancePath: '/dummyArray/1',
         keyword: 'type',
-        message: 'should be number',
+        message: 'must be number',
         params: {
           type: 'number',
         },
         schemaPath: '#/properties/dummyArray/items/type',
       },
       {
-        dataPath: '.dummyBoolean',
+        instancePath: '/dummyBoolean',
         keyword: 'type',
-        message: 'should be boolean',
+        message: 'must be boolean',
         params: {
           type: 'boolean',
         },
@@ -77,4 +78,4 @@ describe('configuration-loader/validators/json-schema', () => {
       },
     ]);
   });
-});
+}); 

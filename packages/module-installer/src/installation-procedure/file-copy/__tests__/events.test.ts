@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import {
   FILE_COPY_EVENTS,
   FileCopyBeforeCopyAllEvent,
@@ -193,4 +195,4 @@ describe('module-installer/installation-procedures/file-copy/events', () => {
       });
     });
   });
-});
+}); 

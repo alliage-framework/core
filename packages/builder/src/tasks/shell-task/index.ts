@@ -1,4 +1,5 @@
 import { exec, ExecException } from 'child_process';
+import { asConst, FromSchema } from 'json-schema-to-ts';
 
 import { EventManager } from '@alliage/lifecycle';
 
@@ -6,10 +7,6 @@ import { AbstractTask } from '../abstract-task';
 import { ShellTaskBeforeRunEvent, ShellTaskErrorEvent, ShellTaskSuccessEvent } from './events';
 
 export const TASK_NAME = '@builder/tasks/SHELL_TASK';
-
-export interface Params {
-  cmd: string;
-}
 
 export class CommandError extends Error {
   public stdout: string;
@@ -26,7 +23,15 @@ export class CommandError extends Error {
   }
 }
 
-export class ShellTask extends AbstractTask {
+const paramsSchema = asConst({
+  type: 'object',
+  required: ['cmd'],
+  additionalProperties: false,
+  properties: {
+    cmd: { type: 'string' },
+  },
+});
+export class ShellTask extends AbstractTask<typeof paramsSchema> {
   private eventManager: EventManager;
 
   constructor(eventManager: EventManager) {
@@ -39,17 +44,10 @@ export class ShellTask extends AbstractTask {
   }
 
   getParamsSchema() {
-    return {
-      type: 'object',
-      properties: {
-        cmd: {
-          type: 'string',
-        },
-      },
-    };
+    return paramsSchema;
   }
 
-  async run(params: Params): Promise<void> {
+  async run(params: FromSchema<typeof paramsSchema>): Promise<void> {
     const beforeRunEvent = new ShellTaskBeforeRunEvent(params.cmd);
     await this.eventManager.emit(beforeRunEvent.getType(), beforeRunEvent);
     const cmd = beforeRunEvent.getCommand();

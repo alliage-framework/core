@@ -1,4 +1,5 @@
 import { service, parameter, instanceOf, allInstancesOf, DEPENDENCY } from '../dependencies';
+import { describe, it, expect } from 'vitest';
 
 describe('dependency-injection/dependencies', () => {
   describe('#service', () => {
@@ -53,4 +54,4 @@ describe('dependency-injection/dependencies', () => {
       });
     });
   });
-});
+}); 

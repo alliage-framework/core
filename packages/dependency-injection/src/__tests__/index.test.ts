@@ -1,21 +1,23 @@
 import { Arguments, PrimitiveContainer } from '@alliage/framework';
+import { describe, it, expect, afterEach, vi, MockInstance } from 'vitest';
 
 import DependencyInjetionModule from '..';
 import { ServiceContainer } from '../service-container';
 
-jest.mock('../service-container');
+vi.mock('../service-container');
 
 describe('dependency-injection', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('DependencyInjectionModule', () => {
-    const ServiceContainerMock = <jest.Mock>ServiceContainer;
-    const addServiceMock = jest.fn();
-    const setParameterMock = jest.fn();
-    let serviceContainerMockInstance: any;
-    ServiceContainerMock.mockImplementation(function ctorMock(this: any) {
+    const ServiceContainerMock = ServiceContainer as unknown as MockInstance;
+    const addServiceMock = vi.fn();
+    const setParameterMock = vi.fn();
+    let serviceContainerMockInstance: ServiceContainer;
+    ServiceContainerMock.mockImplementation(function ctorMock(this: ServiceContainer) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       serviceContainerMockInstance = this;
       this.addService = addServiceMock;
       this.setParameter = setParameterMock;
@@ -31,9 +33,9 @@ describe('dependency-injection', () => {
     describe('#onInit', () => {
       it('should add service container in the primitive container', () => {
         const pcMock = {
-          set: jest.fn(),
+          set: vi.fn(),
         };
-        dim.onInit(Arguments.create(), 'test', (pcMock as unknown) as PrimitiveContainer);
+        dim.onInit(Arguments.create(), 'test', pcMock as unknown as PrimitiveContainer);
 
         expect(ServiceContainerMock).toHaveBeenCalled();
         expect(addServiceMock).toHaveBeenCalledWith(
@@ -45,4 +47,4 @@ describe('dependency-injection', () => {
       });
     });
   });
-});
+}); 

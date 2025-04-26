@@ -11,8 +11,7 @@
     "@alliage/parameters-loader": "<projectRoot>/packages/parameters-loader",
     "@alliage/builder": "<projectRoot>/packages/builder",
     "@alliage/error-handler": "<projectRoot>/packages/error-handler",
-    "@alliage/events-listener-loader": "<projectRoot>/packages/events-listener-loader",
-    "@alliage/core": "<projectRoot>/packages/core"
+    "@alliage/events-listener-loader": "<projectRoot>/packages/events-listener-loader"
   },
   "alliageModules": ["@alliage/module-installer", "@alliage/lifecycle", "@alliage/di"]
 }

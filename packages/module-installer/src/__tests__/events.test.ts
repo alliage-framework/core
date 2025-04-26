@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import {
   InstallationPhasesInitEvent,
   INSTALLATION_EVENTS,
@@ -345,4 +347,4 @@ describe('module-installer/events', () => {
       });
     });
   });
-});
+}); 

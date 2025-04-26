@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { service } from '@alliage/di';
 
 import { Service, SERVICE_DEFINITION_PROPERTY_NAME } from '..';
@@ -24,4 +25,4 @@ describe('service-loader/decorators', () => {
       });
     });
   });
-});
+}); 

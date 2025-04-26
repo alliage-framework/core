@@ -21,7 +21,7 @@ class ErrorProcess extends AbstractProcess {
 
   execute() {
     throw new DummyError('test_prop1', ['test_prop2-1', 'test_prop2-2']);
-    // eslint-disable-next-line no-unreachable
+     
     return this.waitToBeShutdown();
   }
 }

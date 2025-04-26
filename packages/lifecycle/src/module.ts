@@ -5,6 +5,7 @@ import { INIT_EVENTS, LifeCycleInitEvent } from './events';
 import { EventManager } from './event-manager';
 
 export type LifeCycleEventHandlers = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [event: string]: (...args: any[]) => void;
 };
 

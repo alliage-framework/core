@@ -9,6 +9,14 @@ export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts}"], languageOptions: { globals: globals.node } },
   tseslint.configs.recommended,
   {
-    ignores: ['**/dist/**', '**/node_modules/**', 'vitest.config.ts', 'coverage/**'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^_', argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
+    },
+  },
+  {
+    ignores: ['**/dist/**', '**/node_modules/**', 'vitest.config.ts', 'coverage/**', '**/*.test.ts'],
   }
 ]);

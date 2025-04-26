@@ -1,9 +1,11 @@
-import fs from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
 import { createHash } from 'crypto';
 import { Sandbox } from '@alliage/sandbox';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const HASH = createHash('md5')
-  .update(require('../../lerna.json').version)
+  .update(JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../lerna.json')).toString()).version)
   .digest('hex');
 
 describe('Main scenario', () => {
@@ -171,4 +173,4 @@ tasks:
     expect(fs.existsSync(testBuilderFile)).toBe(true);
     expect(fs.readFileSync(testBuilderFile).toString()).toEqual('This is a test\n');
   });
-});
+}); 

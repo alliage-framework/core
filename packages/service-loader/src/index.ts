@@ -55,31 +55,29 @@ export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
         });
         await Promise.all(
           files.map(async (file) => {
-            // eslint-disable-next-line import/no-dynamic-require, global-require
-            const module = require(file);
-            const service = (module && module.default) || module;
-            if (service) {
-              const definition = extractServiceDefinition(service);
-              if (definition) {
-                const beforeOneEvent = new ServiceLoaderBeforeOneEvent(
-                  file,
-                  definition.name,
-                  service,
-                  definition.dependencies,
-                );
-                await eventManager.emit(beforeOneEvent.getType(), beforeOneEvent);
-
-                const name = beforeOneEvent.getName();
-                const ctor = beforeOneEvent.getConstructor();
-                const deps = beforeOneEvent.getDependencies();
-
-                serviceContainer.registerService(name, ctor, deps as Dependency[]);
-
-                await eventManager.emit(
-                  ...ServiceLoaderAfterOneEvent.getParams(file, name, ctor, deps),
-                );
-              }
+            const module = await import(file);
+            const service = module.default ?? module;
+            const definition = extractServiceDefinition(service);
+            if (!definition) {
+              return;
             }
+            const beforeOneEvent = new ServiceLoaderBeforeOneEvent(
+              file,
+              definition.name,
+              service,
+              definition.dependencies,
+            );
+            await eventManager.emit(beforeOneEvent.getType(), beforeOneEvent);
+
+            const name = beforeOneEvent.getName();
+            const ctor = beforeOneEvent.getConstructor();
+            const deps = beforeOneEvent.getDependencies();
+
+            serviceContainer.registerService(name, ctor, deps as Dependency[]);
+
+            await eventManager.emit(
+              ...ServiceLoaderAfterOneEvent.getParams(file, name, ctor, deps),
+            );
           }),
         );
       }),

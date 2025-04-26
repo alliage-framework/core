@@ -16,7 +16,7 @@ export enum SERVICE_STATE {
 }
 
 interface Service {
-  instance: Object | null;
+  instance: object | null;
   ctor: Constructor;
   dependencies: Dependency[];
   state: SERVICE_STATE;
@@ -79,7 +79,7 @@ export class ServiceContainer {
     return this;
   }
 
-  public addService(name: string, instance: Object) {
+  public addService(name: string, instance: object) {
     this.throwIfFrozen();
     this.throwIfAlreadyExists(name);
     this.serviceBag.set(name, {
@@ -102,7 +102,7 @@ export class ServiceContainer {
     return this;
   }
 
-  public getService<T extends Object>(name: string) {
+  public getService<T extends object>(name: string) {
     return this.getDependency<T>(service(name));
   }
 
@@ -118,7 +118,7 @@ export class ServiceContainer {
     return this.getDependency<T>(parameter(path));
   }
 
-  public getDependency<T = any>(dependency: Dependency): T {
+  public getDependency<T = unknown>(dependency: Dependency): T {
     return <T>this.loadDependency(dependency);
   }
 
@@ -150,7 +150,7 @@ export class ServiceContainer {
     }
     loadedService.state = SERVICE_STATE.LOADING;
 
-    const deps: any[] = loadedService.dependencies.map((dep) => this.loadDependency(dep));
+    const deps: unknown[] = loadedService.dependencies.map((dep) => this.loadDependency(dep));
     const ServiceCtor = loadedService.ctor;
     loadedService.instance = new ServiceCtor(...deps);
 

@@ -39,7 +39,7 @@ export abstract class AbstractConfigureEvent extends AbstractEvent<
   }
 
   static getParams(process: AbstractProcess, config: CommandBuilder, env: string) {
-    return super.getParams(process, config, env);
+    return super.getParams(process, config, env) as [PROCESS_EVENTS.POST_CONFIGURE, PostConfigureEvent];
   }
 }
 
@@ -87,7 +87,7 @@ export abstract class AbstractExecuteEvent extends AbstractWritableEvent<
   }
 
   static getParams(process: AbstractProcess, args: Arguments, env: string) {
-    return super.getParams(process, args, env);
+    return super.getParams(process, args, env) as [PROCESS_EVENTS.PRE_EXECUTE, PreExecuteEvent];
   }
 }
 
@@ -147,7 +147,10 @@ export abstract class AbstractTerminateEvent extends AbstractEvent<
     payload: SignalPayload,
     env: string,
   ) {
-    return super.getParams(process, args, signal, payload, env);
+    return super.getParams(process, args, signal, payload, env) as [
+      PROCESS_EVENTS.POST_TERMINATE,
+      PostTerminateEvent,
+    ];
   }
 }
 

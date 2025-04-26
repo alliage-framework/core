@@ -1,13 +1,13 @@
 import Ajv from 'ajv';
-
-export abstract class AbstractTask {
-  getParamsSchema() {
-    return {};
+import { FromSchema, JSONSchema } from 'json-schema-to-ts';
+export abstract class AbstractTask<Schema extends JSONSchema = JSONSchema> {
+  getParamsSchema(): Schema {
+    return {} as Schema;
   }
 
   abstract getName(): string;
 
-  abstract run(params: any): void | Promise<void>;
+  abstract run(params: FromSchema<Schema>): void | Promise<void>;
 }
 
 export class TaskParamsValidationError extends Error {
@@ -30,7 +30,7 @@ export class UnknownTaskError extends Error {
   }
 }
 
-export function validateParams(taskName: string, schema: any, params: any) {
+export function validateParams(taskName: string, schema: JSONSchema, params: unknown) {
   const ajv = new Ajv({ allErrors: true, strictKeywords: true, logger: false });
   const res = ajv.validate(schema, params);
   if (!res) {

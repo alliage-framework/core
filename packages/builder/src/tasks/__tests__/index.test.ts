@@ -1,4 +1,5 @@
 import { AbstractTask, TaskParamsValidationError, validateParams, UnknownTaskError } from '..';
+import { describe, it, expect } from 'vitest';
 
 describe('builder/tasks/abstract-task', () => {
   describe('AbstractTask', () => {
@@ -77,4 +78,4 @@ describe('builder/tasks/abstract-task', () => {
       ]);
     });
   });
-});
+}); 

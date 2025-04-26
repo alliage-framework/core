@@ -1,7 +1,8 @@
-import path from 'path';
+import * as path from 'path';
 import { promises as fs } from 'fs';
+import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 
-import { AbstractModule, Arguments, InstallScript } from '@alliage/framework';
+import { Arguments, InstallScript } from '@alliage/framework';
 import { ServiceContainer, service } from '@alliage/di';
 import { INSTALL_EVENTS, LifeCycleInstallEvent, EventManager } from '@alliage/lifecycle';
 
@@ -17,16 +18,35 @@ import {
 import { MODULE_TYPE } from '../schemas/manifest';
 import { AbstractInstallationProcedure } from '../installation-procedure';
 
-jest.mock('@alliage/framework', () => ({
-  ...jest.requireActual('@alliage/framework'),
-  InstallScript: class InstallScriptMock {
-    execute() {}
-  },
-}));
+vi.mock(import('@alliage/framework'), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    InstallScript: class InstallScriptMock {
+      execute() {}
+    } as unknown as typeof InstallScript,
+  };
+});
+
+const DUMMY_MODULES_RESOLUTION: Record<string, string> = {
+  'test-module/package.json': '/path/to/test-module/package.json',
+  'already-installed-module/package.json': '/path/to/already-installed-module/package.json',
+};
+const CUSTOM_MODULE_RESOLVER = (moduleName: string) => {
+  const modulePath = DUMMY_MODULES_RESOLUTION[moduleName];
+  if (!modulePath) {
+    throw new Error(`Module ${moduleName} not found`);
+  }
+  return modulePath;
+};
+const requireMock = vi.fn<NodeJS.Require>();
 
 describe('module-installer', () => {
   describe('ModuleInstallerModule', () => {
-    const module = new ModuleInstallerModule();
+    const module = new ModuleInstallerModule(
+      requireMock as unknown as NodeJS.Require,
+      CUSTOM_MODULE_RESOLVER,
+    );
 
     describe('#getEventHandlers', () => {
       it('should listen to the install event', () => {
@@ -39,7 +59,7 @@ describe('module-installer', () => {
     describe('#registerService', () => {
       it('should register the file copy installation procedure', () => {
         const sc = new ServiceContainer();
-        jest.spyOn(sc, 'registerService');
+        vi.spyOn(sc, 'registerService');
 
         module.registerServices(sc);
 
@@ -53,38 +73,16 @@ describe('module-installer', () => {
     });
 
     describe('#handleInstall', () => {
-      jest.doMock(
-        path.resolve('./alliage-modules.json'),
-        () => ({
-          'already-installed-module': {
-            module: 'already-installed-module',
-            deps: [],
-            hash: '25e64aa754c310d45c1e084d574c1bb0',
-          },
-        }),
-        { virtual: true },
-      );
-
-      jest.doMock(
-        path.resolve('/path/to/already-installed-module/index.js'),
-        () => ({
-          default: class FakeModule extends AbstractModule {},
-        }),
-        {
-          virtual: true,
-        },
-      );
-
       const eventManager = new EventManager();
       const serviceContainer = new ServiceContainer();
 
       serviceContainer.addService('event_manager', eventManager);
 
-      const phasesInitHandler = jest.fn();
-      const phaseStartHandler = jest.fn();
-      const schemaValidationHandler = jest.fn();
-      const phaseEndHandler = jest.fn();
-      let installScriptExecuteMock: jest.SpyInstance;
+      const phasesInitHandler = vi.fn();
+      const phaseStartHandler = vi.fn();
+      const schemaValidationHandler = vi.fn();
+      const phaseEndHandler = vi.fn();
+      let installScriptExecuteMock: MockInstance;
 
       eventManager.on(INSTALLATION_EVENTS.PHASES_INIT, phasesInitHandler);
       eventManager.on(INSTALLATION_EVENTS.PHASE_START, phaseStartHandler);
@@ -92,31 +90,41 @@ describe('module-installer', () => {
       eventManager.on(INSTALLATION_EVENTS.PHASE_END, phaseEndHandler);
 
       beforeEach(() => {
-        installScriptExecuteMock = jest.spyOn(InstallScript.prototype, 'execute');
+        installScriptExecuteMock = vi.spyOn(InstallScript.prototype, 'execute');
       });
 
       afterEach(() => {
-        jest.restoreAllMocks();
-        jest.resetAllMocks();
-        jest.resetModules();
+        vi.restoreAllMocks();
+        vi.resetAllMocks();
+        vi.resetModules();
       });
 
       it('should start with the dependencies phases if no phases are specified', async () => {
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: ['module1', 'module2'],
-              installationProcedures: {
-                foo: 'bar',
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: ['module1', 'module2'],
+                installationProcedures: {
+                  foo: 'bar',
+                },
               },
-            },
-          }),
-          { virtual: true },
-        );
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         phasesInitHandler.mockImplementationOnce((event: InstallationPhasesInitEvent) => {
           expect(event.getEnv()).toEqual('test');
@@ -268,38 +276,46 @@ describe('module-installer', () => {
       });
 
       it('should then run the procedures phase', async () => {
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: ['module1', 'module2'],
-              installationProcedures: {
-                dummy: true,
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: ['module1', 'module2'],
+                installationProcedures: {
+                  dummy_procedure: true,
+                },
               },
-            },
-          }),
-          { virtual: true },
-        );
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         class DummyInstallationProcedure extends AbstractInstallationProcedure {
           getName() {
             return 'dummy_procedure';
           }
 
-          getSchema() {
+          getParamsSchema() {
             return {
-              dummy: {
-                type: 'boolean',
-              },
-            };
+              type: 'boolean',
+            } as const;
           }
 
           proceed() {}
         }
-        const dummyProcedureSpy = jest.spyOn(DummyInstallationProcedure.prototype, 'proceed');
+        const dummyProcedureSpy = vi.spyOn(DummyInstallationProcedure.prototype, 'proceed');
 
         const scWithProcedure = new ServiceContainer();
         scWithProcedure.registerService('dummy_procedure', DummyInstallationProcedure);
@@ -341,7 +357,7 @@ describe('module-installer', () => {
             type: 'module',
             dependencies: ['module1', 'module2'],
             installationProcedures: {
-              dummy: true,
+              dummy_procedure: true,
             },
           },
           '/path/to/test-module',
@@ -355,35 +371,43 @@ describe('module-installer', () => {
       });
 
       it("should not run any procedure if there's no installation procedures in the manifest", async () => {
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: ['module1', 'module2'],
-            },
-          }),
-          { virtual: true },
-        );
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: ['module1', 'module2'],
+              },
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         class DummyInstallationProcedure extends AbstractInstallationProcedure {
           getName() {
             return 'dummy_procedure';
           }
 
-          getSchema() {
+          getParamsSchema() {
             return {
-              dummy: {
-                type: 'boolean',
-              },
-            };
+              type: 'boolean',
+            } as const;
           }
 
           proceed() {}
         }
-        const dummyProcedureSpy = jest.spyOn(DummyInstallationProcedure.prototype, 'proceed');
+        const dummyProcedureSpy = vi.spyOn(DummyInstallationProcedure.prototype, 'proceed');
 
         const scWithProcedure = new ServiceContainer();
         scWithProcedure.registerService('dummy_procedure', DummyInstallationProcedure);
@@ -406,19 +430,29 @@ describe('module-installer', () => {
       });
 
       it('should finally run the registration phase', async () => {
-        const writeSpy = jest.spyOn(fs, 'writeFile').mockResolvedValue(undefined as never);
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: ['module1', 'module2'],
-            },
-          }),
-          { virtual: true },
-        );
+        const writeSpy = vi.spyOn(fs, 'writeFile').mockResolvedValue(undefined as never);
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: ['module1', 'module2'],
+              },
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         phaseStartHandler.mockImplementationOnce((event: InstallationPhaseStartEvent) => {
           expect(event.getCurrentPhase()).toEqual('registration');
@@ -474,19 +508,29 @@ describe('module-installer', () => {
       });
 
       it('should not register compounds', async () => {
-        const writeSpy = jest.spyOn(fs, 'writeFile').mockResolvedValueOnce(undefined as never);
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'compound',
-              dependencies: ['module1', 'module2'],
-            },
-          }),
-          { virtual: true },
-        );
+        const writeSpy = vi.spyOn(fs, 'writeFile').mockResolvedValueOnce(undefined as never);
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'compound',
+                dependencies: ['module1', 'module2'],
+              },
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         const installEvent = new LifeCycleInstallEvent(INSTALL_EVENTS.INSTALL, {
           serviceContainer,
@@ -505,14 +549,24 @@ describe('module-installer', () => {
       });
 
       it('should not run anything if the module does not have an alliage manifest', async () => {
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-          }),
-          { virtual: true },
-        );
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         const installEvent = new LifeCycleInstallEvent(INSTALL_EVENTS.INSTALL, {
           serviceContainer,
@@ -540,7 +594,7 @@ describe('module-installer', () => {
         try {
           await module.handleInstall(installEvent);
         } catch (e) {
-          error = e;
+          error = e as Error;
         }
 
         expect(error).toBeInstanceOf(Error);
@@ -556,18 +610,28 @@ describe('module-installer', () => {
       });
 
       it('should enable to override the current phase through INSTALLATION_EVENTS.PHASE_START the event', async () => {
-        jest.doMock(
-          '/path/to/test-module/package.json',
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: ['module1', 'module2'],
-            },
-          }),
-          { virtual: true },
-        );
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/test-module/package.json');
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: ['module1', 'module2'],
+              },
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         phaseStartHandler.mockImplementationOnce((event: InstallationPhaseStartEvent) => {
           expect(event.getCurrentPhase()).toEqual('registration');
@@ -592,18 +656,28 @@ describe('module-installer', () => {
       });
 
       it('should be able to handle local modules', async () => {
-        jest.doMock(
-          path.resolve('./test-module/package.json'),
-          () => ({
-            name: 'test-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: ['module1', 'module2'],
-            },
-          }),
-          { virtual: true },
-        );
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./test-module/package.json'));
+            return {
+              name: 'test-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: ['module1', 'module2'],
+              },
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         phaseStartHandler.mockImplementationOnce((event: InstallationPhaseStartEvent) => {
           expect(event.getModuleName()).toEqual('./test-module');
@@ -630,18 +704,28 @@ describe('module-installer', () => {
       });
 
       it('should not install already installed modules', async () => {
-        jest.doMock(
-          '/path/to/already-installed-module/package.json',
-          () => ({
-            name: 'already-installed-module',
-            version: '0.0.1',
-            alliageManifest: {
-              type: 'module',
-              dependencies: [],
-            },
-          }),
-          { virtual: true },
-        );
+        requireMock
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual('/path/to/already-installed-module/package.json');
+            return {
+              name: 'already-installed-module',
+              version: '0.0.1',
+              alliageManifest: {
+                type: 'module',
+                dependencies: [],
+              },
+            };
+          })
+          .mockImplementationOnce((moduleName: string) => {
+            expect(moduleName).toEqual(path.resolve('./alliage-modules.json'));
+            return {
+              'already-installed-module': {
+                module: 'already-installed-module',
+                deps: [],
+                hash: '25e64aa754c310d45c1e084d574c1bb0',
+              },
+            };
+          });
 
         const installEvent = new LifeCycleInstallEvent(INSTALL_EVENTS.INSTALL, {
           serviceContainer,

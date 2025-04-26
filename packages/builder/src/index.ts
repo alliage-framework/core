@@ -10,7 +10,7 @@ import { Constructor, service, ServiceContainer } from '@alliage/di';
 
 import { CONFIG_NAME, schema, Config } from './config';
 import { AbstractTask, validateParams, UnknownTaskError } from './tasks';
-import { injectEnvironment } from './helpers';
+import { EnvInjectable, injectEnvironment } from './helpers';
 import {
   BuilderBeforeAllTasksEvent,
   BuilderAfterAllTasksEvent,
@@ -59,20 +59,18 @@ export default class BuilderModule extends AbstractLifeCycleAwareModule {
 
       const beforeTask = new BuilderBeforeTaskEvent(
         task,
-        injectEnvironment(event.getEnv(), taskData.params),
+        injectEnvironment(event.getEnv(), taskData.params as EnvInjectable),
         taskData.description,
       );
-      // eslint-disable-next-line no-await-in-loop
+
       await eventManager.emit(beforeTask.getType(), beforeTask);
       const params = beforeTask.getParams();
       const description = beforeTask.getDescription();
 
       process.stdout.write(`Running task: ${description}...\n`);
 
-      // eslint-disable-next-line no-await-in-loop
       await task.run(params);
 
-      // eslint-disable-next-line no-await-in-loop
       await eventManager.emit(...BuilderAfterTaskEvent.getParams(task, params, description));
     }
     await eventManager.emit(...BuilderAfterAllTasksEvent.getParams(config, tasks));

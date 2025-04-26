@@ -1,5 +1,6 @@
 import { INITIALIZATION_CONTEXT, Arguments } from '@alliage/framework';
 import { ServiceContainer } from '@alliage/di';
+import { describe, it, expect } from 'vitest';
 
 import {
   AbstractEvent,
@@ -45,7 +46,7 @@ describe('lifecycle/events', () => {
 
       it('should return a frozen version of the payload', () => {
         expect(() => {
-          dummyEvent.getDummyEventPayload().foo = 'test';
+          (dummyEvent.getDummyEventPayload() as { foo: string }).foo = 'test';
         }).toThrow();
       });
     });
@@ -347,4 +348,4 @@ describe('lifecycle/events', () => {
       });
     });
   });
-});
+}); 

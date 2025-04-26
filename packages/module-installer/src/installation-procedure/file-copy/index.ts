@@ -1,6 +1,7 @@
 import path from 'path';
-import { glob} from 'glob';
-import fse from 'fs-extra';
+import { glob } from 'glob';
+import * as fse from 'fs-extra';
+import { asConst, FromSchema } from 'json-schema-to-ts';
 
 import { EventManager } from '@alliage/lifecycle';
 
@@ -15,9 +16,25 @@ import {
 
 export const PROCEDURE_NAME = '@module-installer/INSTALLATION_PROCEDURE/FILE_COPY';
 
-export type FileCopyManifest = {
-  copyFiles?: [string, string][];
-};
+const schema = asConst({
+  type: 'array',
+  items: {
+    type: 'array',
+    items: [
+      {
+        type: 'string',
+        description: 'Source',
+      },
+      {
+        type: 'string',
+        description: 'Destination',
+      },
+    ],
+    minItems: 2,
+    maxItems: 2,
+    additionalItems: false
+  },
+});
 
 export class FileCopyInstallationProcedure extends AbstractInstallationProcedure {
   private eventManager: EventManager;
@@ -28,31 +45,14 @@ export class FileCopyInstallationProcedure extends AbstractInstallationProcedure
   }
 
   getName() {
-    return PROCEDURE_NAME;
+    return 'copyFiles';
   }
 
-  getSchema() {
-    return {
-      copyFiles: {
-        type: 'array',
-        items: {
-          type: 'array',
-          items: [
-            {
-              type: 'string',
-              description: 'Source',
-            },
-            {
-              type: 'string',
-              description: 'Destination',
-            },
-          ],
-        },
-      },
-    };
+  getParamsSchema() {
+    return schema;
   }
 
-  async proceed(manifest: Manifest<FileCopyManifest>, modulePath: string) {
+  async proceed(manifest: Manifest<{ copyFiles: FromSchema<typeof schema> }>, modulePath: string) {
     const filesToCopy = manifest.installationProcedures.copyFiles;
     if (filesToCopy) {
       const copiedFiles: [string, string][] = [];
