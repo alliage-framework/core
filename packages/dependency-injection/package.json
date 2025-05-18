@@ -10,6 +10,7 @@
     "dist",
     "LICENSE"
   ],
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,6 +38,7 @@
     "lodash.get": "^4.4.2"
   },
   "devDependencies": {
+    "@types/lodash.get": "^4.4.9",
     "json-schema-to-ts": "^3.1.1"
   }
 }

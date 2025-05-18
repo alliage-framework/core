@@ -5,14 +5,14 @@ import { asConst, FromSchema } from 'json-schema-to-ts';
 
 import { EventManager } from '@alliage/lifecycle';
 
-import { AbstractInstallationProcedure } from '..';
-import { Manifest } from '../../schemas/manifest';
+import { AbstractInstallationProcedure } from '../index.js';
+import { Manifest } from '../../schemas/manifest.js';
 import {
   FileCopyBeforeCopyAllEvent,
   FileCopyAfterCopyAllEvent,
   FileCopyBeforeCopyFileEvent,
   FileCopyAfterCopyFileEvent,
-} from './events';
+} from './events.js';
 
 export const PROCEDURE_NAME = '@module-installer/INSTALLATION_PROCEDURE/FILE_COPY';
 
@@ -99,4 +99,4 @@ export class FileCopyInstallationProcedure extends AbstractInstallationProcedure
   }
 }
 
-export * from './events';
+export * from './events.js';

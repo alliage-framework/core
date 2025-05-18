@@ -1,6 +1,6 @@
 import { CommandBuilder, Arguments } from '@alliage/framework';
 import { AbstractEvent, AbstractWritableEvent } from '@alliage/lifecycle';
-import { AbstractProcess, SIGNAL, SignalPayload } from './process';
+import { AbstractProcess, SIGNAL, SignalPayload } from './process.js';
 
 export enum PROCESS_EVENTS {
   PRE_CONFIGURE = '@process-manager/PROCESS_EVENT/PRE_CONFIGURE',

@@ -3,8 +3,8 @@ import { asConst, FromSchema } from 'json-schema-to-ts';
 
 import { EventManager } from '@alliage/lifecycle';
 
-import { AbstractTask } from '../abstract-task';
-import { ShellTaskBeforeRunEvent, ShellTaskErrorEvent, ShellTaskSuccessEvent } from './events';
+import { AbstractTask } from '../abstract-task/index.js';
+import { ShellTaskBeforeRunEvent, ShellTaskErrorEvent, ShellTaskSuccessEvent } from './events.js';
 
 export const TASK_NAME = '@builder/tasks/SHELL_TASK';
 

@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .js --ext .ts",
     "lint:fix": "yarn lint --silent -- --fix",
     "test:unit": "NODE_ENV=test vitest run --coverage",
-    "test:integration": "NODE_ENV=test jest --maxWorkers=2 --rootDir=. -c ./integration-tests/jest.config.js",
+    "test:integration": "NODE_ENV=test vitest run --config ./integration-tests/vitest.config.ts",
     "test": "yarn lint && yarn test:unit && yarn test:integration",
     "release": "lerna version --conventional-commits --yes",
     "publish": "lerna publish from-package --yes",
@@ -19,11 +19,10 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@alliage/framework": "../framework/alliage-framework-v0.0.0.tgz",
-    "@alliage/sandbox": "^1.0.0-beta.1",
+    "@alliage/framework": "^1.0.0-beta.4",
+    "@alliage/sandbox": "^1.0.0-beta.3",
     "@eslint/js": "^9.24.0",
     "@types/fs-extra": "11.0.4",
-    "@types/glob": "^8.1.0",
     "@types/node": "^22.14.1",
     "@types/yaml": "^1.9.7",
     "@types/yargs": "^17.0.33",
@@ -33,7 +32,7 @@
     "husky": "^9.1.7",
     "lerna": "^8.2.2",
     "prettier": "^3.5.3",
-    "ts-node": "10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.0",
     "vitest": "^3.1.1"

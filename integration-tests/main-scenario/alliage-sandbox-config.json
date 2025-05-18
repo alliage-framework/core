@@ -1,6 +1,6 @@
 {
-  "command": "ts-node -P <projectRoot>/tsconfig.json -T",
-  "copyFiles": ["<scenarioRoot>/src", "<scenarioRoot>/config"],
+  "command": "tsx",
+  "copyFiles": ["<scenarioRoot>/src", "<scenarioRoot>/config", "<scenarioRoot>/package.json"],
   "linkModules": {
     "@alliage/di": "<projectRoot>/packages/dependency-injection",
     "@alliage/lifecycle": "<projectRoot>/packages/lifecycle",

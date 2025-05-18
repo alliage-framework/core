@@ -1,6 +1,6 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 
-import { ConfigurationSchemaValidationError } from '.';
+import { ConfigurationSchemaValidationError } from './index.js';
 
 export function validate(schema: string | boolean | object) {
   const ajv = new Ajv({ allErrors: true, strictSchema: true, logger: false });

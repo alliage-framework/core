@@ -1,7 +1,7 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import { asConst, FromSchema, JSONSchema } from 'json-schema-to-ts';
 
-import { ManifestValidationError } from '.';
+import { ManifestValidationError } from './index.js';
 
 export enum MODULE_TYPE {
   COMPOUND = 'compound',

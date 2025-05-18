@@ -1,4 +1,4 @@
-import { validate } from './json-schema';
+import { validate } from './json-schema.js';
 
 export class ConfigurationSchemaValidationError extends Error {
   public errors: object[] | null | undefined;

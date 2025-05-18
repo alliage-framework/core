@@ -1,6 +1,6 @@
 import { Dependency } from '@alliage/di';
 
-import { SERVICE_DEFINITION_PROPERTY_NAME, ServiceDecoratorTarget } from '..';
+import { SERVICE_DEFINITION_PROPERTY_NAME, ServiceDecoratorTarget } from '../index.js';
 
 export interface ServiceDefinition {
   name: string;

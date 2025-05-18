@@ -1,4 +1,4 @@
-import { ConfigLoadEvent } from './events';
+import { ConfigLoadEvent } from './events.js';
 
 const ENV_VARIABLE_REGEXP = /^\$\((.*)\)$/;
 const ENV_VARIABLE_PARAMS_REGEXP = /^([A-Z0-9_]+)(:([a-z]+))?(\?(.*))?$/;

@@ -1,6 +1,6 @@
 import { AbstractModule, PrimitiveContainer, Arguments } from '@alliage/framework';
 
-import { ServiceContainer } from './service-container';
+import { ServiceContainer } from './service-container.js';
 
 export default class DependencyInjectionModule extends AbstractModule {
   public getKernelEventHandlers() {
@@ -17,5 +17,5 @@ export default class DependencyInjectionModule extends AbstractModule {
   };
 }
 
-export * from './dependencies';
-export * from './service-container';
+export * from './dependencies.js';
+export * from './service-container.js';

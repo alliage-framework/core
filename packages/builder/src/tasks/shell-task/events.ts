@@ -1,6 +1,6 @@
 import { AbstractWritableEvent, AbstractEvent } from '@alliage/lifecycle';
 
-import { CommandError } from '.';
+import { CommandError } from './index.js';
 
 export enum BUILDER_SHELL_TASK_EVENTS {
   BEFORE_RUN = '@builder/tasks/SHELL_TASK/EVENTS/BEFORE_RUN',

@@ -8,14 +8,14 @@ import {
 } from '@alliage/lifecycle';
 import { Constructor } from '@alliage/di';
 
-import { AbstractProcess, SIGNAL, SignalPayload, SUCCESSFUL_SIGNALS } from './process';
+import { AbstractProcess, SIGNAL, SignalPayload, SUCCESSFUL_SIGNALS } from './process.js';
 import {
   PreConfigureEvent,
   PostConfigureEvent,
   PreExecuteEvent,
   PreTerminateEvent,
   PostTerminateEvent,
-} from './events';
+} from './events.js';
 
 export default class ProcessManagerModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
@@ -111,5 +111,5 @@ export default class ProcessManagerModule extends AbstractLifeCycleAwareModule {
   };
 }
 
-export * from './events';
-export * from './process';
+export * from './events.js';
+export * from './process.js';

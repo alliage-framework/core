@@ -1,7 +1,8 @@
+import { JSONSchema } from 'json-schema-to-ts';
+
 import { AbstractWritableEvent } from '@alliage/lifecycle';
 
-import { Manifest } from './schemas/manifest';
-import { JSONSchema } from 'json-schema-to-ts';
+import { Manifest } from './schemas/manifest.js';
 
 export enum INSTALLATION_EVENTS {
   PHASES_INIT = '@module-installer/EVENTS/BEFORE_COPY_ALL',

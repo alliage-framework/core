@@ -17,16 +17,16 @@ import {
   EventManager,
 } from '@alliage/lifecycle';
 
-import { validate, MODULE_TYPE } from './schemas/manifest';
-import { FileCopyInstallationProcedure, PROCEDURE_NAME } from './installation-procedure/file-copy';
-import { AbstractInstallationProcedure } from './installation-procedure';
-import { INSTALLATION_PHASES } from './constants';
+import { validate, MODULE_TYPE } from './schemas/manifest.js';
+import { FileCopyInstallationProcedure, PROCEDURE_NAME } from './installation-procedure/file-copy/index.js';
+import { AbstractInstallationProcedure } from './installation-procedure/index.js';
+import { INSTALLATION_PHASES } from './constants.js';
 import {
   InstallationPhasesInitEvent,
   InstallationSchemaValidationEvent,
   InstallationPhaseStartEvent,
   InstallationPhaseEndEvent,
-} from './events';
+} from './events.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -136,7 +136,6 @@ export default class ModuleInstallerModule extends AbstractLifeCycleAwareModule 
 
       packageInfo = this.moduleImporter(packageJsonPath);
     } catch (_e) {
-      console.log('Module not found', _e);
       return;
     }
 
@@ -231,7 +230,7 @@ export default class ModuleInstallerModule extends AbstractLifeCycleAwareModule 
   };
 }
 
-export * from './events';
-export * from './constants';
-export * from './installation-procedure';
-export * from './schemas';
+export * from './events.js';
+export * from './constants.js';
+export * from './installation-procedure/index.js';
+export * from './schemas/index.js';

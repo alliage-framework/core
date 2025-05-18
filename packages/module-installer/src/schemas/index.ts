@@ -10,4 +10,4 @@ export class ManifestValidationError extends Error {
   }
 }
 
-export * from './manifest';
+export * from './manifest.js';

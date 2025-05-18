@@ -60,7 +60,7 @@ webserver:
   host: 127.0.0.1
   port: 8080
   credentials:
-    username: thehumblejester
+    username: johnsmith
     password: '411!463|20(|(5'
 ```
 
@@ -72,7 +72,7 @@ import { parameter } from '@alliage/di';
 
 import { MyService } from './MyService';
 
-export = class MyModule extends AbstractLifeCycleAwareModule {
+export default class MyModule extends AbstractLifeCycleAwareModule {
   // ...
 
   registerServices(serviceContainer) {

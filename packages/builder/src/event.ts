@@ -1,7 +1,7 @@
 import { AbstractWritableEvent, AbstractEvent } from '@alliage/lifecycle';
 
-import { Config } from './config';
-import { AbstractTask } from './tasks';
+import { Config } from './config.js';
+import { AbstractTask } from './tasks/index.js';
 
 export enum BUILDER_EVENTS {
   BEFORE_ALL_TASKS = '@builder/BUILDER_EVENTS/BEFORE_ALL_TASKS',

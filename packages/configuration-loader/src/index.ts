@@ -18,8 +18,8 @@ import {
   ConfigPostEnvVariableInjectionEvent,
   ConfigPostFileLoadEvent,
   ConfigPostLoadEvent,
-} from './events';
-import { injectEnvVariables } from './helpers';
+} from './events.js';
+import { injectEnvVariables } from './helpers.js';
 
 const CONFIG_PATH = './config';
 
@@ -94,6 +94,6 @@ export default class ConfigurationLoaderModule extends AbstractLifeCycleAwareMod
   };
 }
 
-export { loadConfig } from './helpers';
-export * from './events';
-export * from './validators';
+export { loadConfig } from './helpers.js';
+export * from './events.js';
+export * from './validators/index.js';

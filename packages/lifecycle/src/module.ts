@@ -1,8 +1,8 @@
 import { AbstractModule, PrimitiveContainer, Arguments } from '@alliage/framework';
 import { ServiceContainer } from '@alliage/di';
 
-import { INIT_EVENTS, LifeCycleInitEvent } from './events';
-import { EventManager } from './event-manager';
+import { INIT_EVENTS, LifeCycleInitEvent } from './events.js';
+import { EventManager } from './event-manager.js';
 
 export type LifeCycleEventHandlers = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

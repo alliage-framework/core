@@ -7,7 +7,7 @@ import {
   allInstancesOf,
   parameter,
   ParameterGetter,
-} from './dependencies';
+} from './dependencies.js';
 
 export enum SERVICE_STATE {
   NOT_LOADED = 'SERVICE_STATE/NOT_LOADED',
@@ -160,10 +160,13 @@ export class ServiceContainer {
 
   private loadParameter(getter: ParameterGetter) {
     const res = getter(
-      Array.from(this.parameterBag.entries()).reduce((acc, [key, value]) => {
-        acc[key] = value;
-        return acc;
-      }, {} as { [key: string]: Parameter }),
+      Array.from(this.parameterBag.entries()).reduce(
+        (acc, [key, value]) => {
+          acc[key] = value;
+          return acc;
+        },
+        {} as { [key: string]: Parameter },
+      ),
     );
 
     if (res === undefined) {

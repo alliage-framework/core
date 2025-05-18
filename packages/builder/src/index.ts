@@ -8,16 +8,16 @@ import { CONFIG_EVENTS, loadConfig, validators } from '@alliage/config-loader';
 
 import { Constructor, service, ServiceContainer } from '@alliage/di';
 
-import { CONFIG_NAME, schema, Config } from './config';
-import { AbstractTask, validateParams, UnknownTaskError } from './tasks';
-import { EnvInjectable, injectEnvironment } from './helpers';
+import { CONFIG_NAME, schema, Config } from './config.js';
+import { AbstractTask, validateParams, UnknownTaskError } from './tasks/index.js';
+import { EnvInjectable, injectEnvironment } from './helpers.js';
 import {
   BuilderBeforeAllTasksEvent,
   BuilderAfterAllTasksEvent,
   BuilderBeforeTaskEvent,
   BuilderAfterTaskEvent,
-} from './event';
-import { TASK_NAME, ShellTask } from './tasks/shell-task';
+} from './event.js';
+import { TASK_NAME, ShellTask } from './tasks/shell-task/index.js';
 
 export default class BuilderModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
@@ -77,6 +77,6 @@ export default class BuilderModule extends AbstractLifeCycleAwareModule {
   };
 }
 
-export * from './config';
-export * from './event';
-export * from './tasks';
+export * from './config.js';
+export * from './event.js';
+export * from './tasks/index.js';

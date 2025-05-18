@@ -4,13 +4,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "Service loader module for Alliage",
+  "description": "Parameters loader module for Alliage",
   "files": [
     "README.md",
     "dist",
     "base-files",
     "LICENSE"
   ],
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",

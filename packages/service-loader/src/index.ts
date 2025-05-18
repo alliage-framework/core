@@ -10,14 +10,14 @@ import {
 } from '@alliage/lifecycle';
 import { CONFIG_EVENTS, loadConfig, validators } from '@alliage/config-loader';
 
-import { CONFIG_NAME, schema, Config } from './config';
-import { extractServiceDefinition } from './decorators/extractors';
+import { CONFIG_NAME, schema, Config } from './config.js';
+import { extractServiceDefinition } from './decorators/extractors/index.js';
 import {
   ServiceLoaderBeforeAllEvent,
   ServiceLoaderAfterAllEvent,
   ServiceLoaderBeforeOneEvent,
   ServiceLoaderAfterOneEvent,
-} from './events';
+} from './events.js';
 
 export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
@@ -87,6 +87,6 @@ export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
   };
 }
 
-export * from './config';
-export * from './events';
-export * from './decorators';
+export * from './config.js';
+export * from './events.js';
+export * from './decorators/index.js';

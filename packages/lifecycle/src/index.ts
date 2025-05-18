@@ -13,8 +13,8 @@ import {
   LifeCycleInstallEvent,
   LifeCycleBuildEvent,
   LifeCycleRunEvent,
-} from './events';
-import { EventManager } from './event-manager';
+} from './events.js';
+import { EventManager } from './event-manager.js';
 
 export default class LifecyleModule extends AbstractModule {
   private eventManager: EventManager;
@@ -90,6 +90,6 @@ export default class LifecyleModule extends AbstractModule {
   };
 }
 
-export * from './module';
-export * from './event-manager';
-export * from './events';
+export * from './module.js';
+export * from './event-manager.js';
+export * from './events.js';
