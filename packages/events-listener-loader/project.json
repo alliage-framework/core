@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/events-listener-loader",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

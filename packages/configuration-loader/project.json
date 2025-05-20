@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/config-loader",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

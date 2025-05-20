@@ -58,3 +58,7 @@ temp/
 /alliage-modules.json
 /.alliage-sandboxes
 package-lock.json
+
+
+.nx/cache
+.nx/workspace-data

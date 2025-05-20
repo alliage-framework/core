@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/di",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

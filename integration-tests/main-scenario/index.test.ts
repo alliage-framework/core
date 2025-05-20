@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const HASH = createHash('md5')
   .update(
-    JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../lerna.json')).toString()).version,
+    JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../packages/lifecycle/package.json')).toString()).version,
   )
   .digest('hex');
 

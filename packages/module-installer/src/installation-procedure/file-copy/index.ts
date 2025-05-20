@@ -5,7 +5,7 @@ import { asConst, FromSchema } from 'json-schema-to-ts';
 
 import { EventManager } from '@alliage/lifecycle';
 
-import { AbstractInstallationProcedure } from '../index.js';
+import { AbstractInstallationProcedure } from '../abstract-installation-procedure.js';
 import { Manifest } from '../../schemas/manifest.js';
 import {
   FileCopyBeforeCopyAllEvent,

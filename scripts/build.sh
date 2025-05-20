@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rm -rf dist
-cp "$LERNA_ROOT_PATH/tsconfig.build.json" tsconfig.json
+cp "$NX_WORKSPACE_ROOT/tsconfig.build.json" tsconfig.json
 tsc --declaration
 EXIT_CODE=$?
 rm tsconfig.json
