@@ -1,6 +1,6 @@
 {
   "name": "@alliage/module-installer",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0-beta.4",
   "publishConfig": {
     "access": "public"
   },
@@ -29,10 +29,7 @@
   "homepage": "https://github.com/alliage-framework/core#readme",
   "alliageManifest": {
     "type": "module",
-    "dependencies": [
-      "@alliage/di",
-      "@alliage/lifecycle"
-    ],
+    "dependencies": [],
     "environments": [
       "development"
     ]
@@ -43,13 +40,13 @@
     "glob": "^11.0.1"
   },
   "devDependencies": {
-    "@alliage/di": "^0.1.0-beta.3",
-    "@alliage/lifecycle": "^0.1.0-beta.3",
+    "@alliage/di": "0.1.0-beta.4",
+    "@alliage/lifecycle": "0.1.0-beta.4",
     "json-schema-to-ts": "^3.1.1"
   },
   "peerDependencies": {
-    "@alliage/di": "^0.1.0-beta.3",
+    "@alliage/di": "0.1.0-beta.4",
     "@alliage/framework": "^1.0.0-beta.3",
-    "@alliage/lifecycle": "^0.1.0-beta.3"
+    "@alliage/lifecycle": "0.1.0-beta.4"
   }
 }

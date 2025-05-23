@@ -1,0 +1,9 @@
+## 0.1.0-beta.4 (2025-05-23)
+
+### 🚀 Features
+
+- upgrade deps, migrate to ESM, update docs ([#5](https://github.com/alliage-framework/core/pull/5))
+
+### ❤️ Thank You
+
+- bolebon
