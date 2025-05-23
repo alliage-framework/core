@@ -28,8 +28,11 @@ jobs:
         run: |
           tar -xf build.tar.gz -C .
           rm -rf build.tar.gz
-      - name: Authenticate on NPM
-        run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
+      - name: Authenticate and configure NPM registry
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          echo "registry=https://registry.npmjs.org/" >> .npmrc
+          echo "always-auth=true" >> .npmrc
       - name: Release
         run: |
           yarn prepare
