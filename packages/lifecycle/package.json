@@ -1,6 +1,6 @@
 {
   "name": "@alliage/lifecycle",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "publishConfig": {
     "access": "public"
   },
@@ -34,11 +34,11 @@
     ]
   },
   "devDependencies": {
-    "@alliage/di": "0.1.0-beta.5",
+    "@alliage/di": "0.1.0-beta.6",
     "json-schema-to-ts": "^3.1.1"
   },
   "peerDependencies": {
-    "@alliage/di": "0.1.0-beta.5",
+    "@alliage/di": "0.1.0-beta.6",
     "@alliage/framework": "^1.0.0-beta.3"
   }
 }
