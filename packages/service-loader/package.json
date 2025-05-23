@@ -30,7 +30,12 @@
   "homepage": "https://github.com/alliage-framework/core#readme",
   "alliageManifest": {
     "type": "module",
-    "dependencies": [],
+    "dependencies": [
+      "@alliage/config-loader",
+      "@alliage/di",
+      "@alliage/lifecycle",
+      "@alliage/module-installer"
+    ],
     "installationProcedures": {
       "copyFiles": [
         [

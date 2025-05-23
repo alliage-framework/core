@@ -40,7 +40,8 @@
     },
     "git": {
       "commitMessageFormat": "chore(release): publish v{version}",
-      "tagName": "{version}"
+      "tagName": "{version}",
+      "commitArgs": "--no-verify"
     },
     "projectsRelationship": "fixed",
     "version": {

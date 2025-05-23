@@ -43,6 +43,9 @@
   },
   "alliageManifest": {
     "type": "module",
-    "dependencies": []
+    "dependencies": [
+      "@alliage/di",
+      "@alliage/lifecycle"
+    ]
   }
 }
