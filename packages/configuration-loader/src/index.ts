@@ -18,8 +18,8 @@ import {
   ConfigPostEnvVariableInjectionEvent,
   ConfigPostFileLoadEvent,
   ConfigPostLoadEvent,
-} from './events';
-import { injectEnvVariables } from './helpers';
+} from './events.js';
+import { injectEnvVariables } from './helpers.js';
 
 const CONFIG_PATH = './config';
 
@@ -55,7 +55,7 @@ export default class ConfigurationLoaderModule extends AbstractLifeCycleAwareMod
         const configFilePath = preFileLoadEvent.getFilePath();
         try {
           await fs.stat(configFilePath);
-        } catch (e) {
+        } catch (_e) {
           throw new Error(`Can't find the following configuration file: ${configFilePath}`);
         }
         const preFileParseEvent = new ConfigPreFileParseEvent(
@@ -82,7 +82,7 @@ export default class ConfigurationLoaderModule extends AbstractLifeCycleAwareMod
           postEnvVariableInjectionEvent,
         );
 
-        serviceContainer.setParameter(fileName, postEnvVariableInjectionEvent.getConfig() as any);
+        serviceContainer.setParameter(fileName, postEnvVariableInjectionEvent.getConfig());
 
         const postFileLoadEvent = new ConfigPostFileLoadEvent(fileName, configFilePath);
         await eventManager.emit(postFileLoadEvent.getType(), postFileLoadEvent);
@@ -94,6 +94,6 @@ export default class ConfigurationLoaderModule extends AbstractLifeCycleAwareMod
   };
 }
 
-export { loadConfig } from './helpers';
-export * from './events';
-export * from './validators';
+export { loadConfig } from './helpers.js';
+export * from './events.js';
+export * from './validators/index.js';

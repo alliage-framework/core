@@ -1,10 +1,10 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 
-import { ConfigurationSchemaValidationError } from '.';
+import { ConfigurationSchemaValidationError } from './index.js';
 
 export function validate(schema: string | boolean | object) {
-  const ajv = new Ajv({ allErrors: true, strictKeywords: true, logger: false });
-  return function validator(configPath: string, config: any) {
+  const ajv = new Ajv({ allErrors: true, strictSchema: true, logger: false });
+  return function validator(configPath: string, config: unknown) {
     const configCopy = JSON.parse(JSON.stringify(config));
     const valid = ajv.validate(schema, configCopy);
     if (!valid) {

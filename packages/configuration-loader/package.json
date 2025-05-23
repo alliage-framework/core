@@ -10,6 +10,7 @@
     "dist",
     "LICENSE"
   ],
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alliage-framework/core.git"
+    "url": "https://github.com/alliage-framework/core.git"
   },
   "author": "bo.lebon@gmail.com",
   "license": "GNU",
@@ -27,17 +28,18 @@
   },
   "homepage": "https://github.com/alliage-framework/core#readme",
   "dependencies": {
-    "ajv": "^6.12.0",
-    "yaml": "^1.7.2"
+    "ajv": "^8.17.1",
+    "yaml": "^2.7.1"
   },
   "peerDependencies": {
-    "@alliage/framework": "^1.0.0-beta.3",
     "@alliage/di": "^0.1.0-beta.3",
+    "@alliage/framework": "^1.0.0-beta.3",
     "@alliage/lifecycle": "^0.1.0-beta.3"
   },
   "devDependencies": {
     "@alliage/di": "^0.1.0-beta.3",
-    "@alliage/lifecycle": "^0.1.0-beta.3"
+    "@alliage/lifecycle": "^0.1.0-beta.3",
+    "json-schema-to-ts": "^3.1.1"
   },
   "alliageManifest": {
     "type": "module",

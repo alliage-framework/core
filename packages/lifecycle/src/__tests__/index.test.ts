@@ -1,4 +1,5 @@
 import { PrimitiveContainer, Arguments, INITIALIZATION_CONTEXT } from '@alliage/framework';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import LifecycleModule from '..';
 import { EventManager } from '../event-manager';
@@ -15,17 +16,17 @@ import {
 
 describe('lifecycle', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   describe('LifecycleModule', () => {
     const pc = new PrimitiveContainer({});
-    const emitMock = jest.spyOn(EventManager.prototype, 'emit');
+    const emitMock = vi.spyOn(EventManager.prototype, 'emit');
     const serviceContainerMock = {
-      freeze: jest.fn(),
-      addService: jest.fn(),
+      freeze: vi.fn(),
+      addService: vi.fn(),
     };
     pc.set('service_container', serviceContainerMock);
-    jest.spyOn(pc, 'get');
+    vi.spyOn(pc, 'get');
 
     const lifecycleModule = new LifecycleModule();
 
@@ -244,4 +245,4 @@ describe('lifecycle', () => {
       });
     });
   });
-});
+}); 

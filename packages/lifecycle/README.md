@@ -1,8 +1,6 @@
 # Alliage Lifecycle
 
-This module brings more granularity in the initial alliage events easing the definition of priority in the events execution order other than just playing with modules dependencies.
-
-It also allows to trigger events in your own modules to make them extendable with other modules.
+This module provides enhanced granularity for Alliage events, making it easier to define execution priorities beyond basic module dependencies. It also enables you to trigger custom events in your modules, making them extensible through other modules.
 
 ## Dependencies
 
@@ -14,7 +12,7 @@ It also allows to trigger events in your own modules to make them extendable wit
 yarn add @alliage/lifecycle
 ```
 
-With npm
+Or with npm:
 
 ```bash
 npm install @alliage/lifecycle
@@ -22,15 +20,15 @@ npm install @alliage/lifecycle
 
 ## Registration
 
-Update your `alliage-modules.json` file to add this at the bottom:
+Add the following to your `alliage-modules.json` file:
 
-```js
+```json
 {
   // ... other modules
   "@alliage/lifecycle": {
     "module": "@alliage/lifecycle",
     "deps": ["@alliage/di"],
-    "envs": [],
+    "envs": []
   }
 }
 ```
@@ -39,15 +37,16 @@ Update your `alliage-modules.json` file to add this at the bottom:
 
 ### EventManager
 
-The event manager is a service automatically injected in the [service container](../dependency-injection#service-container).
+The EventManager is a service automatically injected into the [service container](../dependency-injection#service-container).
 
-You can get it directly in your own alliage module like so:
+You can access it directly in your Alliage module:
 
+**JavaScript**
 ```js
 import { AbstractModule } from '@alliage/framework';
 
-export = class MyFirstModule extends AbstractModule {
-  public getKernelEventHandlers() {
+export default class MyFirstModule extends AbstractModule {
+  getKernelEventHandlers() {
     return {
       init: this.onInit,
     };
@@ -56,14 +55,38 @@ export = class MyFirstModule extends AbstractModule {
   onInit = async (args, env, container) => {
     const serviceContainer = container.get('service_container');
 
-    // Here's how we get the EventManager
+    // Get the EventManager
     const eventManager = serviceContainer.get('event_manager');
   };
-};
+}
 ```
 
-Or get it injected in any of your services, as below:
+**TypeScript**
+```ts
+import { AbstractModule, PrimitiveContainer } from '@alliage/framework';
+import { ServiceContainer } from '@alliage/di';
+import { Arguments } from '@alliage/arguments';
+import { EventManager } from '@alliage/lifecycle';
 
+export default class MyFirstModule extends AbstractModule {
+  public getKernelEventHandlers() {
+    return {
+      init: this.onInit,
+    };
+  }
+
+  onInit = async (args: Arguments, env: string, container: PrimitiveContainer) => {
+    const serviceContainer: ServiceContainer = container.get('service_container');
+
+    // Get the EventManager
+    const eventManager: EventManager = serviceContainer.get('event_manager');
+  };
+}
+```
+
+Or inject it into any of your services:
+
+**JavaScript**
 ```js
 import { service } from '@alliage/di';
 
@@ -75,73 +98,120 @@ class MyService {
   // ...
 }
 
-// ...
-
+// Register the service with the injected EventManager
 serviceContainer.registerService('my_service', MyService, [service('event_manager')]);
 ```
 
-The event manager has an API close to `EventEmitter` allowing to emit and listen to events. The particularity is that listeners can be `async` and will then be executed sequentially.
+**TypeScript**
+```ts
+import { service } from '@alliage/di';
+import { EventManager } from '@alliage/lifecycle';
 
-It has the following methods:
+class MyService {
+  private eventManager: EventManager;
 
-- `on(eventType: string, listener: (...args: any[]) => void | Promise<void>)`: Listen to the `eventType` event and calls `listener` when the event is emitted. It returns a function allowing to unsubscribe from the event.
-- `emit(eventType: string, ...args: any[])`: Emit the `eventType` event and pass `...args` to any of the event's listeners.
+  constructor(eventManager: EventManager) {
+    this.eventManager = eventManager;
+  }
+
+  // ...
+}
+
+// Register the service with the injected EventManager
+serviceContainer.registerService('my_service', MyService, [service('event_manager')]);
+```
+
+The EventManager's API is similar to `EventEmitter` but allows for async listeners that execute sequentially. It offers these key methods:
+
+- `on(eventType: string, listener: (...args: any[]) => void | Promise<void>)`: Subscribes to an event and returns an unsubscribe function
+- `emit(eventType: string, ...args: any[])`: Emits an event with the provided arguments
 
 #### AbstractEvent
 
-Even if you can potentially send anything you want to an event listener when emitting an event, it's highly encouraged to send an instance of `AbstractEvent`.
-
-`AbstractEvent` is an abstract class helping you to build your own events' payloads.
+While you can send any data when emitting events, it's recommended to use the `AbstractEvent` class to structure your event payloads.
 
 Here's an example:
 
+**JavaScript**
 ```js
 import { AbstractEvent } from '@alliage/lifecycle';
 
-// We create an event type
+// Define event types
 const LOGIN_EVENTS = {
   USER_LOGGED_IN: 'LOGIN_EVENTS/USER_LOGGED_IN',
 };
 
-// We create our own event class
+// Create a custom event class
 class LoginUserLoggedEvent extends AbstractEvent {
-  // The constructor takes the parameters needed to
-  // build the payload
   constructor(userId) {
     super(
-      LOGIN_EVENTS.USER_LOGGED_IN, // The event type
-      { userId }, // The payload
+      LOGIN_EVENTS.USER_LOGGED_IN, // Event type
+      { userId }                   // Event payload
     );
   }
 
-  // We provide a method to ease access to
-  // payload's property
+  // Helper method for payload access
   getUserId() {
-    // AbstractEvent provides a method to
-    // get the payload
     return this.getPayload().userId;
   }
 }
 
-// ...
-
+// Usage
 const userLoggedEvent = new LoginUserLoggedEvent(42);
 
-console.log(userLoggedEvent.getType()); // "LOGIN_EVENTS/USER_LOGGED_IN"
-console.log(userLoggedEvent.getUserId()); // "42"
+console.log(userLoggedEvent.getType());   // "LOGIN_EVENTS/USER_LOGGED_IN"
+console.log(userLoggedEvent.getUserId()); // 42
 
-// This event can then be emitted using the EventManager
+// Emit the event using EventManager
+eventManager.emit(userLoggedEvent.getType(), userLoggedEvent);
+```
+
+**TypeScript**
+```ts
+import { AbstractEvent } from '@alliage/lifecycle';
+
+// Define event types
+const LOGIN_EVENTS = {
+  USER_LOGGED_IN: 'LOGIN_EVENTS/USER_LOGGED_IN',
+};
+
+// Define payload interface
+interface LoginUserLoggedPayload {
+  userId: number;
+}
+
+// Create a custom event class
+class LoginUserLoggedEvent extends AbstractEvent<LoginUserLoggedPayload> {
+  constructor(userId: number) {
+    super(
+      LOGIN_EVENTS.USER_LOGGED_IN, // Event type
+      { userId }                   // Event payload
+    );
+  }
+
+  // Helper method for payload access
+  getUserId(): number {
+    return this.getPayload().userId;
+  }
+}
+
+// Usage
+const userLoggedEvent = new LoginUserLoggedEvent(42);
+
+console.log(userLoggedEvent.getType());   // "LOGIN_EVENTS/USER_LOGGED_IN"
+console.log(userLoggedEvent.getUserId()); // 42
+
+// Emit the event using EventManager
 eventManager.emit(userLoggedEvent.getType(), userLoggedEvent);
 ```
 
 #### AbstractWritableEvent
 
-By convention, the payload of the `AbstractEvent` is read only. But at some point, you might want to let event listeners re-write some part of your payload.
+By convention, `AbstractEvent` payloads are read-only. When you need to allow event listeners to modify parts of your payload, use `AbstractWritableEvent`.
 
-To do so, you can use `AbstractWritableEvent` instead of `AbstractEvent`.
+This class creates a writable copy of your payload that can be exposed through getters and setters:
 
-This class will just create a writable copy of your original payload that you'll be able to expose through getters and setters.
-
+**JavaScript**
 ```js
 import { AbstractWritableEvent } from '@alliage/lifecycle';
 
@@ -149,17 +219,15 @@ const CHECKOUT_EVENTS = {
   COMPUTE_FINAL_PRICE: 'CHECKOUT_EVENTS/COMPUTE_FINAL_PRICE',
 };
 
-// We make our event class extends AbstraxtWritableEvent this time.
 class CheckoutComputeFinalPriceEvent extends AbstractWritableEvent {
   constructor(price, vatNumber, countryCode) {
     super(
-      CHECKOUT_EVENTS.COMPUTE_FINAL_PRICE, // The event type
-      { price, vatNumber, countryCode }, // The payload
+      CHECKOUT_EVENTS.COMPUTE_FINAL_PRICE, // Event type
+      { price, vatNumber, countryCode }    // Event payload
     );
   }
 
-  // VATNumber and Country code are not writable so we
-  // make them use `getPayload`
+  // Read-only properties use getPayload()
   getVatNumber() {
     return this.getPayload().vatNumber;
   }
@@ -168,23 +236,70 @@ class CheckoutComputeFinalPriceEvent extends AbstractWritableEvent {
     return this.getPayload().countryCode;
   }
 
-  // As price is writable, we make its getter method
-  // use "getWritablePayload" instead of "getPayload"
+  // Writable properties use getWritablePayload()
   getPrice() {
     return this.getWritablePayload().price;
   }
 
-  // We create a setter method allowing to
-  // update the price
-  // This method will be usually used by events listeners
+  // Setter method for modifying price
   setPrice(price) {
     this.getWritablePayload().price = price;
     return this;
   }
 }
 
-// ...
+// Usage
+const computeFinalPriceEvent = new CheckoutComputeFinalPriceEvent(42, 'FR01000000158', 'FR');
 
+console.log(computeFinalPriceEvent.getPrice()); // 42
+computeFinalPriceEvent.setPrice(38);
+console.log(computeFinalPriceEvent.getPrice()); // 38
+```
+
+**TypeScript**
+```ts
+import { AbstractWritableEvent } from '@alliage/lifecycle';
+
+const CHECKOUT_EVENTS = {
+  COMPUTE_FINAL_PRICE: 'CHECKOUT_EVENTS/COMPUTE_FINAL_PRICE',
+};
+
+interface CheckoutComputeFinalPricePayload {
+  price: number;
+  vatNumber: string;
+  countryCode: string;
+}
+
+class CheckoutComputeFinalPriceEvent extends AbstractWritableEvent<CheckoutComputeFinalPricePayload> {
+  constructor(price: number, vatNumber: string, countryCode: string) {
+    super(
+      CHECKOUT_EVENTS.COMPUTE_FINAL_PRICE, // Event type
+      { price, vatNumber, countryCode }    // Event payload
+    );
+  }
+
+  // Read-only properties use getPayload()
+  getVatNumber(): string {
+    return this.getPayload().vatNumber;
+  }
+
+  getCountryCode(): string {
+    return this.getPayload().countryCode;
+  }
+
+  // Writable properties use getWritablePayload()
+  getPrice(): number {
+    return this.getWritablePayload().price;
+  }
+
+  // Setter method for modifying price
+  setPrice(price: number): this {
+    this.getWritablePayload().price = price;
+    return this;
+  }
+}
+
+// Usage
 const computeFinalPriceEvent = new CheckoutComputeFinalPriceEvent(42, 'FR01000000158', 'FR');
 
 console.log(computeFinalPriceEvent.getPrice()); // 42
@@ -194,24 +309,34 @@ console.log(computeFinalPriceEvent.getPrice()); // 38
 
 ### Events
 
-This module comes with its own set of events triggered at the different phases of an [alliage script lifecycle](https://github.com/alliage-framework/framework#how-does-it-work-).
+This module provides its own set of events triggered during different phases of the [Alliage script lifecycle](https://github.com/alliage-framework/framework#how-does-it-work-).
 
-Everything related to events is available in the `@alliage/lifecycle` module.
+All event-related functionality is available in the `@alliage/lifecycle` module.
 
 #### Types
 
 ##### Init
 
-Init events are triggered before any other event.
+Init events are triggered before any other events:
 
+**JavaScript**
 ```js
 import { INIT_EVENTS } from '@alliage/lifecycle';
 
-// ...
-
+// Event listeners
 eventManager.on(INIT_EVENTS.PRE_INIT, (event) => console.log('Pre init event', event));
 eventManager.on(INIT_EVENTS.INIT, (event) => console.log('Init event', event));
 eventManager.on(INIT_EVENTS.POST_INIT, (event) => console.log('Post init event', event));
+```
+
+**TypeScript**
+```ts
+import { INIT_EVENTS, LifeCycleInitEvent } from '@alliage/lifecycle';
+
+// Event listeners
+eventManager.on(INIT_EVENTS.PRE_INIT, (event: LifeCycleInitEvent) => console.log('Pre init event', event));
+eventManager.on(INIT_EVENTS.INIT, (event: LifeCycleInitEvent) => console.log('Init event', event));
+eventManager.on(INIT_EVENTS.POST_INIT, (event: LifeCycleInitEvent) => console.log('Post init event', event));
 ```
 
 | Type                    | Event object                              | Description               |
@@ -222,16 +347,26 @@ eventManager.on(INIT_EVENTS.POST_INIT, (event) => console.log('Post init event',
 
 ##### Install
 
-Install events are triggered during the install script.
+Install events are triggered during the install script:
 
+**JavaScript**
 ```js
 import { INSTALL_EVENTS } from '@alliage/lifecycle';
 
-// ...
-
+// Event listeners
 eventManager.on(INSTALL_EVENTS.PRE_INSTALL, (event) => console.log('Pre install event', event));
 eventManager.on(INSTALL_EVENTS.INSTALL, (event) => console.log('Install event', event));
 eventManager.on(INSTALL_EVENTS.POST_INSTALL, (event) => console.log('Post install event', event));
+```
+
+**TypeScript**
+```ts
+import { INSTALL_EVENTS, LifeCycleInstallEvent } from '@alliage/lifecycle';
+
+// Event listeners
+eventManager.on(INSTALL_EVENTS.PRE_INSTALL, (event: LifeCycleInstallEvent) => console.log('Pre install event', event));
+eventManager.on(INSTALL_EVENTS.INSTALL, (event: LifeCycleInstallEvent) => console.log('Install event', event));
+eventManager.on(INSTALL_EVENTS.POST_INSTALL, (event: LifeCycleInstallEvent) => console.log('Post install event', event));
 ```
 
 | Type                          | Event object                                    | Description               |
@@ -242,16 +377,26 @@ eventManager.on(INSTALL_EVENTS.POST_INSTALL, (event) => console.log('Post instal
 
 ##### Build
 
-Build events are triggered during the build script.
+Build events are triggered during the build script:
 
+**JavaScript**
 ```js
 import { BUILD_EVENTS } from '@alliage/lifecycle';
 
-// ...
-
+// Event listeners
 eventManager.on(BUILD_EVENTS.PRE_BUILD, (event) => console.log('Pre build event', event));
 eventManager.on(BUILD_EVENTS.BUILD, (event) => console.log('Build event', event));
 eventManager.on(BUILD_EVENTS.POST_BUILD, (event) => console.log('Post build event', event));
+```
+
+**TypeScript**
+```ts
+import { BUILD_EVENTS, LifeCycleBuildEvent } from '@alliage/lifecycle';
+
+// Event listeners
+eventManager.on(BUILD_EVENTS.PRE_BUILD, (event: LifeCycleBuildEvent) => console.log('Pre build event', event));
+eventManager.on(BUILD_EVENTS.BUILD, (event: LifeCycleBuildEvent) => console.log('Build event', event));
+eventManager.on(BUILD_EVENTS.POST_BUILD, (event: LifeCycleBuildEvent) => console.log('Post build event', event));
 ```
 
 | Type                      | Event object                                | Description         |
@@ -262,16 +407,26 @@ eventManager.on(BUILD_EVENTS.POST_BUILD, (event) => console.log('Post build even
 
 ##### Run
 
-Run events are triggered during the run script.
+Run events are triggered during the run script:
 
+**JavaScript**
 ```js
 import { RUN_EVENTS } from '@alliage/lifecycle';
 
-// ...
-
+// Event listeners
 eventManager.on(RUN_EVENTS.PRE_RUN, (event) => console.log('Pre run event', event));
 eventManager.on(RUN_EVENTS.RUN, (event) => console.log('Run event', event));
 eventManager.on(RUN_EVENTS.POST_RUN, (event) => console.log('Post run event', event));
+```
+
+**TypeScript**
+```ts
+import { RUN_EVENTS, LifeCycleRunEvent } from '@alliage/lifecycle';
+
+// Event listeners
+eventManager.on(RUN_EVENTS.PRE_RUN, (event: LifeCycleRunEvent) => console.log('Pre run event', event));
+eventManager.on(RUN_EVENTS.RUN, (event: LifeCycleRunEvent) => console.log('Run event', event));
+eventManager.on(RUN_EVENTS.POST_RUN, (event: LifeCycleRunEvent) => console.log('Post run event', event));
 ```
 
 | Type                  | Event object                            | Description       |
@@ -284,7 +439,7 @@ eventManager.on(RUN_EVENTS.POST_RUN, (event) => console.log('Post run event', ev
 
 ##### LifeCycleInitEvent
 
-This is the instance of the event object received in any `INIT_EVENTS` listener.
+This is the event object received in any `INIT_EVENTS` listener.
 
 - `getServiceContainer(): ServiceContainer`: Returns the [service container](../dependency-injection#service-container)
 - `getArguments(): Arguments`: Returns the [arguments](https://github.com/alliage-framework/framework#the-argument-class) of the current script
@@ -292,16 +447,16 @@ This is the instance of the event object received in any `INIT_EVENTS` listener.
 
 ##### LifeCycleInstallEvent
 
-This is the instance of the event object received in any `INSTALL_EVENTS` listener.
+This is the event object received in any `INSTALL_EVENTS` listener.
 
 - `getServiceContainer(): ServiceContainer`: Returns the [service container](../dependency-injection#service-container)
 - `getArguments(): Arguments`: Returns the [arguments](https://github.com/alliage-framework/framework#the-argument-class) of the current script
 - `getEnv(): string`: Returns the current [environment](https://github.com/alliage-framework/framework#environment)
-- `getContext(): INITIALIZATION_CONTEXT`: Returns the initialization context (`INITIALIZATION_CONTEXT.INSTALL`, `INITIALIZATION_CONTEXT.BUILD` or `INITIALIZATION_CONTEXT.RUN`)
+- `getContext(): INITIALIZATION_CONTEXT`: Returns the initialization context (`INITIALIZATION_CONTEXT.INSTALL`, `INITIALIZATION_CONTEXT.BUILD`, or `INITIALIZATION_CONTEXT.RUN`)
 
 ##### LifeCycleBuildEvent
 
-This is the instance of the event object received in any `BUILD_EVENTS` listener.
+This is the event object received in any `BUILD_EVENTS` listener.
 
 - `getServiceContainer(): ServiceContainer`: Returns the [service container](../dependency-injection#service-container)
 - `getArguments(): Arguments`: Returns the [arguments](https://github.com/alliage-framework/framework#the-argument-class) of the current script
@@ -309,7 +464,7 @@ This is the instance of the event object received in any `BUILD_EVENTS` listener
 
 ##### LifeCycleRunEvent
 
-This is the instance of the event object received in any `RUN_EVENTS` listener.
+This is the event object received in any `RUN_EVENTS` listener.
 
 - `getServiceContainer(): ServiceContainer`: Returns the [service container](../dependency-injection#service-container)
 - `getArguments(): Arguments`: Returns the [arguments](https://github.com/alliage-framework/framework#the-argument-class) of the current script
@@ -317,39 +472,68 @@ This is the instance of the event object received in any `RUN_EVENTS` listener.
 
 ### AbstractLifecycleAwareModule
 
-The `AbstractLifecycleAwareModule` is a layer on top of `AbstractModule` easing the listening of lifecycle events and the registration of services.
+The `AbstractLifecycleAwareModule` extends `AbstractModule` to simplify listening to lifecycle events and registering services.
 
-You can use it instead of `AbstractModule` to create your modules.
-All you need is to implement the following methods:
+You can use it instead of `AbstractModule` when creating your modules by implementing:
 
-- `getEventHandlers()`: Returns the list of events you want your module to listen to and their corresponding listener.
-- `registerServices(serviceContainer: ServiceContainer, env: string)` _(optional)_: Allows your module to register service or set parameters in the service container.
+- `getEventHandlers()`: Returns event listeners mapped to event types
+- `registerServices(serviceContainer: ServiceContainer, env: string)` _(optional)_: Registers services or sets parameters in the service container
 
+**JavaScript**
 ```js
 import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS } from '@alliage/lifecycle';
+import { MyService } from './MyService.js';
 
-import { MyService } from './MyService';
-
-export = class MyModule extends AbstractLifeCycleAwareModule {
-  // Here we subscribe to the INIT_EVENTS.INIT and RUN_EVENTS.RUN events
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  // Subscribe to events
   getEventHandlers() {
     return {
       [INIT_EVENTS.INIT]: this.handleInit,
       [RUN_EVENTS.RUN]: this.handleRun,
-    }
+    };
   }
 
-  // Here we register services
+  // Register services
   registerServices(serviceContainer, env) {
     serviceContainer.registerService('my_service', MyService, []);
   }
 
   handleInit = (event) => {
-    // ...
-  }
+    // Handle initialization
+  };
 
   handleRun = (event) => {
-    // ...
+    // Handle run
+  };
+}
+```
+
+**TypeScript**
+```ts
+import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS, LifeCycleInitEvent, LifeCycleRunEvent } from '@alliage/lifecycle';
+import { ServiceContainer } from '@alliage/di';
+import { MyService } from './MyService.js';
+
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  // Subscribe to events
+  getEventHandlers() {
+    return {
+      [INIT_EVENTS.INIT]: this.handleInit,
+      [RUN_EVENTS.RUN]: this.handleRun,
+    };
   }
+
+  // Register services
+  registerServices(serviceContainer: ServiceContainer, env: string): void {
+    serviceContainer.registerService('my_service', MyService, []);
+  }
+
+  handleInit = (event: LifeCycleInitEvent): void => {
+    // Handle initialization
+  };
+
+  handleRun = (event: LifeCycleRunEvent): void => {
+    // Handle run
+  };
 }
 ```

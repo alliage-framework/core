@@ -1,7 +1,7 @@
 import { AbstractLifeCycleAwareModule } from '@alliage/lifecycle';
 import { CONFIG_EVENTS, loadConfig, validators } from '@alliage/config-loader';
 
-import { CONFIG_NAME, schema } from './config';
+import { CONFIG_NAME, schema } from './config.js';
 
 export default class ParametersLoaderModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
@@ -11,4 +11,4 @@ export default class ParametersLoaderModule extends AbstractLifeCycleAwareModule
   }
 }
 
-export * from './config';
+export * from './config.js';

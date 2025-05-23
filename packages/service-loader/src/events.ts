@@ -1,4 +1,4 @@
-import { Dependency } from '@alliage/di';
+import { Constructor, Dependency } from '@alliage/di';
 import { AbstractWritableEvent, AbstractEvent } from '@alliage/lifecycle';
 
 export enum SERVICE_LOADER_EVENTS {
@@ -66,14 +66,14 @@ export class ServiceLoaderAfterAllEvent extends AbstractEvent<
   }
 
   static getParams(basePath: string, paths: readonly string[], exclude: readonly string[]) {
-    return super.getParams(basePath, paths, exclude);
+    return super.getParams(basePath, paths, exclude) as [SERVICE_LOADER_EVENTS.AFTER_ALL, ServiceLoaderAfterAllEvent];
   }
 }
 
 export interface ServiceLoaderOneEventPayload {
   modulePath: string;
   name: string;
-  constructor: any;
+  constructor: Constructor;
   dependencies: Dependency[];
 }
 
@@ -81,7 +81,7 @@ export class ServiceLoaderBeforeOneEvent extends AbstractWritableEvent<
   SERVICE_LOADER_EVENTS,
   ServiceLoaderOneEventPayload
 > {
-  constructor(modulePath: string, name: string, constructor: any, dependencies: Dependency[]) {
+  constructor(modulePath: string, name: string, constructor: Constructor, dependencies: Dependency[]) {
     super(SERVICE_LOADER_EVENTS.BEFORE_ONE, { modulePath, name, constructor, dependencies });
   }
 
@@ -101,7 +101,7 @@ export class ServiceLoaderBeforeOneEvent extends AbstractWritableEvent<
     return Object.freeze(this.getWritablePayload().dependencies);
   }
 
-  setConstructor(constructor: any) {
+  setConstructor(constructor: Constructor) {
     this.getWritablePayload().constructor = constructor;
     return this;
   }
@@ -116,7 +116,7 @@ export class ServiceLoaderAfterOneEvent extends AbstractEvent<
   SERVICE_LOADER_EVENTS,
   ServiceLoaderOneEventPayload
 > {
-  constructor(modulePath: string, name: string, constructor: any, dependencies: Dependency[]) {
+  constructor(modulePath: string, name: string, constructor: Constructor, dependencies: Dependency[]) {
     super(SERVICE_LOADER_EVENTS.AFTER_ONE, { modulePath, name, constructor, dependencies });
   }
 
@@ -139,9 +139,12 @@ export class ServiceLoaderAfterOneEvent extends AbstractEvent<
   static getParams(
     modulePath: string,
     name: string,
-    constructor: any,
+    constructor: Constructor,
     dependencies: readonly Dependency[],
   ) {
-    return super.getParams(modulePath, name, constructor, dependencies);
+    return super.getParams(modulePath, name, constructor, dependencies) as [
+      SERVICE_LOADER_EVENTS.AFTER_ONE,
+      ServiceLoaderAfterOneEvent,
+    ];
   }
 }

@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { Arguments, CommandBuilder } from '@alliage/framework';
 import { AbstractProcess, SIGNAL } from '../process';
 import {
@@ -304,4 +305,4 @@ describe('process-manager/events', () => {
       });
     });
   });
-});
+}); 

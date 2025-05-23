@@ -1,4 +1,5 @@
 import { promisify } from 'util';
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi, MockInstance } from 'vitest';
 
 import { Arguments, CommandBuilder } from '@alliage/framework';
 
@@ -16,20 +17,33 @@ import {
 } from '../events';
 
 const waitForNextTick = promisify(process.nextTick);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const originalListeners = new Map<string | symbol, ((...args: any[]) => void)[]>();
 
 describe('process-manager', () => {
   beforeEach(() => {
-    jest.spyOn(process, 'exit').mockImplementation((_code: number | undefined) => ({} as never));
+    vi.spyOn(process, 'exit').mockImplementation((_code: number | undefined) => ({} as never));
+    // We save all the listeners to restore them after the test
+    process.eventNames().forEach((event) => {
+      originalListeners.set(event, process.listeners(event as NodeJS.Signals));
+    });
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    ((process.exit as unknown) as jest.SpyInstance).mockRestore();
+    vi.clearAllMocks();
+    (process.exit as unknown as MockInstance).mockRestore();
     process.removeAllListeners();
+    // We restore all the listeners
+    originalListeners.forEach((listeners, event) => {
+      listeners.forEach((listener) => {
+        process.on(event, listener);
+      });
+    });
+    originalListeners.clear();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('ProcessManagerModule', () => {
@@ -55,15 +69,15 @@ describe('process-manager', () => {
     const eventManager = new EventManager();
     const testProcess = new TestProcess();
 
-    const configureSpy = jest.spyOn(TestProcess.prototype, 'configure');
-    const executeSpy = jest.spyOn(TestProcess.prototype, 'execute');
-    const terminateSpy = jest.spyOn(TestProcess.prototype, 'terminate');
+    const configureSpy = vi.spyOn(TestProcess.prototype, 'configure');
+    const executeSpy = vi.spyOn(TestProcess.prototype, 'execute');
+    const terminateSpy = vi.spyOn(TestProcess.prototype, 'terminate');
 
-    const preConfigureHandler = jest.fn();
-    const postConfigureHandler = jest.fn();
-    const preExecuteHandler = jest.fn();
-    const preTerminateHandler = jest.fn();
-    const postTerminateHandler = jest.fn();
+    const preConfigureHandler = vi.fn();
+    const postConfigureHandler = vi.fn();
+    const preExecuteHandler = vi.fn();
+    const preTerminateHandler = vi.fn();
+    const postTerminateHandler = vi.fn();
 
     eventManager.on(PROCESS_EVENTS.PRE_CONFIGURE, preConfigureHandler);
     eventManager.on(PROCESS_EVENTS.POST_CONFIGURE, postConfigureHandler);
@@ -282,7 +296,7 @@ describe('process-manager', () => {
         expect(postConfigureHandler).toHaveBeenCalledTimes(1);
         expect(preExecuteHandler).toHaveBeenCalledTimes(1);
 
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         preTerminateHandler.mockImplementationOnce((event: PreTerminateEvent) => {
           expect(event.getSignal()).toEqual(SIGNAL.SIGINT);
@@ -317,7 +331,7 @@ describe('process-manager', () => {
         expect(postConfigureHandler).toHaveBeenCalledTimes(1);
         expect(preExecuteHandler).toHaveBeenCalledTimes(1);
 
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         preTerminateHandler.mockImplementationOnce((event: PreTerminateEvent) => {
           expect(event.getSignal()).toEqual(SIGNAL.SIGTERM);
@@ -352,7 +366,7 @@ describe('process-manager', () => {
         expect(postConfigureHandler).toHaveBeenCalledTimes(1);
         expect(preExecuteHandler).toHaveBeenCalledTimes(1);
 
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         const error = new Error();
 
@@ -390,7 +404,7 @@ describe('process-manager', () => {
         expect(postConfigureHandler).toHaveBeenCalledTimes(1);
         expect(preExecuteHandler).toHaveBeenCalledTimes(1);
 
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         const error = new Error();
         const promise = Promise.reject(error).catch(() => undefined);
@@ -415,4 +429,4 @@ describe('process-manager', () => {
       });
     });
   });
-});
+}); 

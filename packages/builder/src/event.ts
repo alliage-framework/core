@@ -1,7 +1,7 @@
 import { AbstractWritableEvent, AbstractEvent } from '@alliage/lifecycle';
 
-import { Config } from './config';
-import { AbstractTask } from './tasks';
+import { Config } from './config.js';
+import { AbstractTask } from './tasks/index.js';
 
 export enum BUILDER_EVENTS {
   BEFORE_ALL_TASKS = '@builder/BUILDER_EVENTS/BEFORE_ALL_TASKS',
@@ -13,7 +13,7 @@ export enum BUILDER_EVENTS {
 
 export interface BuilderAllTasksEventPayload {
   config: Config;
-  tasks: { [name: string]: AbstractTask };
+  tasks: Record<string, AbstractTask>;
 }
 
 export class BuilderBeforeAllTasksEvent extends AbstractWritableEvent<
@@ -55,13 +55,14 @@ export class BuilderAfterAllTasksEvent extends AbstractEvent<
   }
 
   static getParams(config: Config, tasks: { [name: string]: AbstractTask }) {
-    return super.getParams(config, tasks);
+    return super.getParams(config, tasks) as [BUILDER_EVENTS.AFTER_ALL_TASKS, BuilderAfterAllTasksEvent];
   }
 }
 
+type TaskParams = string | number | boolean | null | undefined | TaskParams[] | { [key: string]: TaskParams };
 export interface BuilderTaskEventPayload {
   task: AbstractTask;
-  params: any;
+  params: TaskParams;
   description: string;
 }
 
@@ -69,7 +70,7 @@ export class BuilderBeforeTaskEvent extends AbstractWritableEvent<
   BUILDER_EVENTS,
   BuilderTaskEventPayload
 > {
-  constructor(task: AbstractTask, params: any, description: string) {
+  constructor(task: AbstractTask, params: TaskParams, description: string) {
     super(BUILDER_EVENTS.BEFORE_TASK, { task, params, description });
   }
 
@@ -85,7 +86,7 @@ export class BuilderBeforeTaskEvent extends AbstractWritableEvent<
     return this.getWritablePayload().description;
   }
 
-  setParams(params: any) {
+  setParams(params: TaskParams) {
     this.getWritablePayload().params = params;
     return this;
   }
@@ -97,7 +98,7 @@ export class BuilderBeforeTaskEvent extends AbstractWritableEvent<
 }
 
 export class BuilderAfterTaskEvent extends AbstractEvent<BUILDER_EVENTS, BuilderTaskEventPayload> {
-  constructor(task: AbstractTask, params: any, description: string) {
+  constructor(task: AbstractTask, params: TaskParams, description: string) {
     super(BUILDER_EVENTS.AFTER_TASK, { task, params, description });
   }
 
@@ -113,7 +114,7 @@ export class BuilderAfterTaskEvent extends AbstractEvent<BUILDER_EVENTS, Builder
     return this.getPayload().description;
   }
 
-  static getParams(task: AbstractTask, params: any, description: string) {
-    return super.getParams(task, params, description);
+  static getParams(task: AbstractTask, params: Readonly<TaskParams>, description: string) {
+    return super.getParams(task, params, description) as [BUILDER_EVENTS.AFTER_TASK, BuilderAfterTaskEvent];
   }
 }

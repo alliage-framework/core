@@ -1,12 +1,11 @@
 # Alliage Module Installer
 
+The Module Installer automates common actions required when installing an Alliage module, including:
 
-The module installer automatize some repetitive actions a user must make to install an alliage module such as:
-
-- Registering the module in the `alliage-modules.json` file
-- Installing module's depedencies if they aren't already
-- Creating/copying files
-- Etc...
+- Registering modules in the `alliage-modules.json` file
+- Installing module dependencies
+- Creating or copying configuration files
+- And more...
 
 ## Dependencies
 
@@ -18,32 +17,32 @@ The module installer automatize some repetitive actions a user must make to inst
 yarn add -D @alliage/module-installer
 ```
 
-With npm
+Or with npm:
 
 ```bash
-npm install --dev @alliage/module-installer
+npm install --save-dev @alliage/module-installer
 ```
 
 ## Registration
 
-Update your `alliage-modules.json` file to add this at the bottom:
+Add the module to your `alliage-modules.json` file:
 
-```js
+```json
 {
   // ... other modules
   "@alliage/module-installer": {
     "module": "@alliage/module-installer",
     "deps": [
-      "@alliage/lifecycle",
+      "@alliage/lifecycle"
     ],
-    "envs": ["development"],
+    "envs": ["development"]
   }
 }
 ```
 
 ## Usage
 
-Once you've installed an alliage module package with NPM, you'll be able to install it in alliage by running the following command:
+After installing an Alliage module package with npm or yarn, you can install it in your Alliage project by running:
 
 ```bash
 $(npm bin)/alliage-scripts install [package name]
@@ -51,11 +50,11 @@ $(npm bin)/alliage-scripts install [package name]
 
 ### Manifest
 
-In order to be recognized as an alliage module and, thus, to be installable, the `package.json` of the module must contain a manifest available under the `alliageManifest` property.
+For a package to be recognized as an Alliage module (and therefore installable), its `package.json` must contain a manifest under the `alliageManifest` property.
 
-The manifest will contain metadata necessary to install the module automatically as you can see in the example below:
+This manifest contains metadata necessary for automatic installation:
 
-```js
+```json
 {
   "name": "my-alliage-module",
   "version": "0.1.0",
@@ -64,7 +63,7 @@ The manifest will contain metadata necessary to install the module automatically
     "type": "module",
     "dependencies": [
       "other-alliage-module",
-      "another-alliage-module",
+      "another-alliage-module"
     ],
     "environments": ["development"],
     "installationProcedures": {
@@ -74,98 +73,123 @@ The manifest will contain metadata necessary to install the module automatically
 }
 ```
 
-#### Properties
+#### Manifest Properties
 
-- **type** (`string`): Can take the following values
-  - `"module"`: A regular alliage module.
-  - `"compound"`: Not an actual module but rather an aggregation of several modules. It won't be registered in the `alliage-modules.json` file.
-- **dependencies** (`string[]`): All the modules on which this module depends.
-- **environments** (`string[]`): Environments in which the module will be loaded. Can be left empty if the module must be loaded on all environments.
-- **installationProcedures** (`object`): Procedures to run at the installation (see [here](#procedures-phase)).
+- **type** (`string`): The module type:
+  - `"module"`: A standard Alliage module
+  - `"compound"`: An aggregation of multiple modules that won't be registered in `alliage-modules.json`
+- **dependencies** (`string[]`): Other modules this module depends on
+- **environments** (`string[]`): Environments in which this module will be loaded (leave empty for all environments)
+- **installationProcedures** (`object`): Procedures to run during installation (see [Procedures Phase](#procedures-phase))
 
-### Installation flow
+### Installation Flow
 
-During the installation of a module, the install script will go through several phases described just below between which it will reload the kernel to take changes in account.
+The installation script executes several phases and reloads the kernel between phases to apply changes:
 
-#### Dependencies phase
+#### Dependencies Phase
 
-The dependency phase consists in running the install script for each dependency of the module defined in the manifest. This is obviously necessary to make sure that the module will work correctly once installed.
+The dependencies phase installs each dependency listed in the module's manifest. This ensures that all required modules are properly installed before the module itself.
 
-#### Procedures phase
+#### Procedures Phase
 
-The procedures phase will run installation procedures as described in the manifest.
-A procedure can been anything that your module needs to work like, for example, [copying or creating files in the project](#file-copy-procedure).
+The procedures phase executes installation procedures as specified in the manifest. Procedures can include actions like [copying files](#file-copy-procedure) or any other setup needed for the module to function correctly.
 
-#### Registration phase
+#### Registration Phase
 
-The registration phase, which will usually be the last phase of the installation process, will simply automatically register the module in the `alliage-modules.json` file.
+The registration phase automatically adds the module to the `alliage-modules.json` file of the project.
 
 ### Installation Procedures
 
-Installation procedures are any action that might be required to make your module directly usable.
-It can be for example:
+Installation procedures are tasks required to make your module usable. These can include:
 
-- Calling a remote server
-- Running a shell command
+- Calling a remote API
+- Running shell commands
 - [Copying files](#file-copy-procedure)
+- Any other action not directly related to Alliage's internal functioning
 
-In short, everything that is not especially related to the alliage internal functioning.
+Procedures are defined in the `installationProcedures` property of the manifest:
 
-The procedures that must be executed for a given module must be defined in the `installationProcedures` of the manifest:
-
-```js
+```json
 {
   "name": "my-alliage-module",
   "version": "0.1.0",
   // ...
   "alliageManifest": {
-    //
+    // ...
     "installationProcedures": {
       "[procedure name]": {
-        // [procedures parameters]
+        // [procedure parameters]
       }
     }
   }
 }
 ```
 
-This module comes with one [built-in procedure](#file-copy-procedure) but also provides all the tool to create its own installation procedure.
+This module includes one [built-in procedure](#file-copy-procedure) and provides tools to create custom installation procedures.
 
-### Run specific phases
+### Running Specific Phases
 
-When installing a module you can decide to run specific phases instead of running all of them, like so:
+You can run specific installation phases instead of the full process:
 
 ```bash
 $(npm bin)/alliage-scripts install [package name] --phases=procedures
 ```
 
-This will only run the "procedures" phase of the installation process.
+This command will only run the "procedures" phase.
 
-You can also decide to run several of them in a specific order like so:
+You can also run multiple phases in a specific order:
 
 ```bash
 $(npm bin)/alliage-scripts install [package name] --phases=procedures,registration
 ```
 
-This will only run the "procedures" phase, then the "registration" phase of the installation process.
+This will run the "procedures" phase followed by the "registration" phase.
 
-#### AbstractInstallationProcedure
+#### Creating Custom Installation Procedures
 
-This module provides a way to create your own installation procedures. All you have to do is to implement the `AbstractInstallationProcedure`.
+You can create custom installation procedures by implementing the `AbstractInstallationProcedure` class:
 
-A installation procedure must have the following methods:
-
-- `getName(): string`: Must return the name of the procedure (which must be unique)
-- `getSchema(): object`: Must return the [schema](https://json-schema.org/) of the installation procedure parameters in the manifest. This will allow to validate the installation procedures parameters.
-- `proceed(manifest: object, modulePath: string): void | Promise<void>`: Contain the logic of the procedure (what it does). It receive the following parameters:
-  - **manifest**: The manifest of the module
-  - **modulePath**: Path of the module
-
-Let's imagine we wan't to create a procedure allowing to run a shell command, we could have the following implementation:
-
-```js
+**TypeScript Example:**
+```typescript
 import { execSync } from 'child_process';
+import { AbstractInstallationProcedure, Manifest } from '@alliage/module-installer';
+import { JSONSchema } from 'json-schema-to-ts';
 
+// We expect a "commands" property in the manifest
+// with an array of strings as its value
+const schema = {
+  commands: {
+    type: 'array',
+    items: {
+      type: 'string'
+    }
+  }
+} as const
+
+export class ShellProcedure extends AbstractInstallationProcedure {
+  getName() {
+    return 'shell_procedure';
+  }
+
+  getParamsSchema() {
+    return schema;
+  }
+
+  proceed(manifest: Manifest<{ commands: typeof schema }>): void {
+    const { commands } = manifest.installationProcedures;
+    if (commands) {
+      // Execute each command in the array
+      commands.forEach((command: string) => {
+        execSync(command);
+      });
+    }
+  }
+}
+```
+
+**JavaScript Example:**
+```javascript
+import { execSync } from 'child_process';
 import { AbstractInstallationProcedure } from '@alliage/module-installer';
 
 export class ShellProcedure extends AbstractInstallationProcedure {
@@ -173,54 +197,69 @@ export class ShellProcedure extends AbstractInstallationProcedure {
     return 'shell_procedure';
   }
 
-  getSchema() {
-    // We expect a "commands" property in
-    // "alliageManifest.installationProcedures"
-    // whose value is an array of string
+  getParamsSchema() {
+    // We expect a "commands" property in the manifest
+    // with an array of strings as its value
     return {
       commands: {
         type: 'array',
         items: {
-          type: string,
-        },
-      },
+          type: 'string'
+        }
+      }
     };
   }
 
   proceed(manifest, _modulePath) {
-    const commands = manifest.installationProcedures.commands;
+    const { commands } = manifest.installationProcedures;
     if (commands) {
-      // We iterate over the list of command and execute them
-      commands.forEach(() => {
-        execSync(commands);
+      // Execute each command in the array
+      commands.forEach(command => {
+        execSync(command);
       });
     }
   }
 }
 ```
 
-Once the installation procedure is created, you just have to register it as a service in your module:
+After creating your procedure, register it as a service in your module:
 
-```js
+**TypeScript Example:**
+```typescript
 import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS } from '@alliage/lifecycle';
+import { ServiceContainer } from '@alliage/di';
+import { ShellProcedure } from './shell-procedure.js';
 
-import { ShellProcedure } from './shell-procedure';
-
-export = class MyModule extends AbstractLifeCycleAwareModule {
+export default class MyModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
     // ...
   }
 
-  // Here we register services
+  registerServices(serviceContainer: ServiceContainer) {
+    serviceContainer.registerService('shell_procedure', ShellProcedure, []);
+  }
+}
+```
+
+**JavaScript Example:**
+```javascript
+import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS } from '@alliage/lifecycle';
+import { ShellProcedure } from './shell-procedure.js';
+
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  getEventHandlers() {
+    // ...
+  }
+
   registerServices(serviceContainer) {
     serviceContainer.registerService('shell_procedure', ShellProcedure, []);
   }
 }
 ```
 
-Then, other modules will be able to use this new installation procedures in their manifest like so:
+Now other modules can use your installation procedure in their manifest:
 
-```js
+```json
 {
   "name": "my-alliage-module",
   "version": "0.1.0",
@@ -228,25 +267,23 @@ Then, other modules will be able to use this new installation procedures in thei
   "alliageManifest": {
     // ...
     "installationProcedures": {
-      "commands": [
-        "tsc --init",
-        "cp tsconfig.json tsconfig.prod.json",
-        "cp tsconfig.json tsconfig.test.json",
-      ]
+      "shell_procedure": {
+        "commands": [
+          "tsc --init",
+          "cp tsconfig.json tsconfig.prod.json",
+          "cp tsconfig.json tsconfig.test.json"
+        ]
+      }
     }
   }
 }
 ```
 
-And these 3 commands will be executed during the module installation.
+#### File Copy Procedure
 
-#### File copy procedure
+The module installer includes a built-in procedure for copying files from your module to the project:
 
-The module installer comes with one built-in procedure allowing you to copy a file coming from your module to your project.
-
-To do so, you just have to use the `copyFiles` installation procedures like so in your modules's manifest:
-
-```js
+```json
 {
   "name": "my-alliage-module",
   "version": "0.1.0",
@@ -256,124 +293,127 @@ To do so, you just have to use the `copyFiles` installation procedures like so i
     "installationProcedures": {
       "copyFiles": [
         // source (relative to module's path) - destination (relative to project's path)
-        ["base-files/config.yaml", "config/my-module.yaml"],
+        ["base-files/config.yaml", "config/my-module.yaml"]
       ]
     }
   }
 }
 ```
 
-This configuration will copy the `base-file/config.yaml` from the module's folder to the `config/my-module.yaml` file of the project.
+This configuration copies `base-file/config.yaml` from the module directory to `config/my-module.yaml` in the project.
 
-The source path also supports wildcards and globbing.
+The source path supports wildcards and globbing patterns.
 
 ## Events
 
-### Installation events
+### Installation Events
 
-```js
+```typescript
+// TypeScript
 import { INSTALLATION_EVENTS } from '@alliage/module-installer';
 ```
 
 | Type                                    | Event object                                                            | Description                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `INSTALLATION_EVENTS.PHASES_INIT`       | [InstallationPhasesInitEvent](#installationphasesinitevent)             | At the beginning of the installation process, allow to define available and default phases |
-| `INSTALLATION_EVENTS.SCHEMA_VALIDATION` | [InstallationSchemaValidationEvent](#installationschemavalidationevent) | Before the validation of the manifest                                                      |
-| `INSTALLATION_EVENTS.PHASE_START`       | [InstallationPhaseStartEvent](#installationphasestartevent)             | Before an installation phase                                                               |
-| `INSTALLATION_EVENTS.PHASE_END`         | [InstallationPhaseEndEvent](#installationphaseendevent)                 | After an installation phase                                                                |
+| `INSTALLATION_EVENTS.PHASES_INIT`       | [InstallationPhasesInitEvent](#installationphasesinitevent)             | Triggered at the beginning of installation, allows defining available and default phases |
+| `INSTALLATION_EVENTS.SCHEMA_VALIDATION` | [InstallationSchemaValidationEvent](#installationschemavalidationevent) | Triggered before manifest validation                                                      |
+| `INSTALLATION_EVENTS.PHASE_START`       | [InstallationPhaseStartEvent](#installationphasestartevent)             | Triggered before an installation phase                                                   |
+| `INSTALLATION_EVENTS.PHASE_END`         | [InstallationPhaseEndEvent](#installationphaseendevent)                 | Triggered after an installation phase                                                    |
 
 #### InstallationPhasesInitEvent
 
-This is the instance of the event object received in any `INSTALLATION_EVENTS.PHASES_INIT` listener.
+This event is triggered during `INSTALLATION_EVENTS.PHASES_INIT` and provides:
 
-- `getAvailablePhases(): string[]`: Returns the available installation phases
-- `getDefaultPhases(): string[]`: Returns the default phases (used when not explicitely defined in the install script arguments)
-- `getEnv(): string`: Returns the current [environment](https://github.com/alliage-framework/framework#environment)
-- `setAvailablePhases(phases: string[]): InstallationPhasesInitEvent`: Allows to re-define the available phases
-- `setDefaultPhases(phases: string[]): InstallationPhasesInitEvent`: Allows to re-define the default phases
+- `getAvailablePhases(): string[]`: Returns available installation phases
+- `getDefaultPhases(): string[]`: Returns default phases (used when not explicitly defined in install script arguments)
+- `getEnv(): string`: Returns the current environment
+- `setAvailablePhases(phases: string[]): InstallationPhasesInitEvent`: Redefines available phases
+- `setDefaultPhases(phases: string[]): InstallationPhasesInitEvent`: Redefines default phases
 
 #### InstallationSchemaValidationEvent
 
-This is the instance of the event object received in any `INSTALLATION_EVENTS.SCHEMA_VALIDATION` listener.
+This event is triggered during `INSTALLATION_EVENTS.SCHEMA_VALIDATION` and provides:
 
 - `getModuleName(): string`: Returns the name of the module being installed
-- `getCurrentPhase(): string`: Returns the installation phase about to be executed
-- `getNextPhases(): string[]`: Returns the list of the next phases to execute afterwards
-- `getManifest(): object`: Returns the content of the manifest of the module being installed
-- `getExtendedPropertiesSchemas(): object`: Get the `installationProcedures` property validation schema
-- `getEnv(): string`: Returns the current [environment](https://github.com/alliage-framework/framework#environment)
-- `setExtendedPropertiesSchemas(schema: object): InstallationSchemaValidationEvent`: Allows to re-define the `installationProcedures` property validation schema
+- `getCurrentPhase(): string`: Returns the installation phase about to execute
+- `getNextPhases(): string[]`: Returns the list of phases to execute afterward
+- `getManifest(): object`: Returns the manifest content of the module being installed
+- `getExtendedPropertiesSchemas(): object`: Gets the `installationProcedures` property validation schema
+- `getEnv(): string`: Returns the current environment
+- `setExtendedPropertiesSchemas(schema: object): InstallationSchemaValidationEvent`: Redefines the `installationProcedures` property validation schema
 
 #### InstallationPhaseStartEvent
 
-This is the instance of the event object received in any `INSTALLATION_EVENTS.PHASE_START` listener.
+This event is triggered during `INSTALLATION_EVENTS.PHASE_START` and provides:
 
 - `getModuleName(): string`: Returns the name of the module being installed
 - `getModulePath(): string`: Returns the path of the module being installed
-- `getPackageInfo(): object`: Returns the content of the `package.json` file of the module being installed
-- `getManifest(): object`: Returns the content of the manifest of the module being installed
-- `getCurrentPhase(): string`: Returns the installation phase about to be executed
-- `getNextPhases(): string[]`: Returns the list of the next phases to execute afterwards
-- `getEnv(): string`: Returns the current [environment](https://github.com/alliage-framework/framework#environment)
-- `setManifest(phases: object): InstallationPhaseStartEvent`: Allows to re-define the module's manifest
-- `setCurrentPhase(phase: string): InstallationPhaseStartEvent`: Allows to re-define the installation about to be executed
-- `setNextPhases(phases: string[]): InstallationPhaseStartEvent`: Allows to re-define the next phases to execute afterwards
+- `getPackageInfo(): object`: Returns the content of the module's `package.json` file
+- `getManifest(): object`: Returns the content of the module's manifest
+- `getCurrentPhase(): string`: Returns the installation phase about to execute
+- `getNextPhases(): string[]`: Returns the list of phases to execute afterward
+- `getEnv(): string`: Returns the current environment
+- `setManifest(manifest: object): InstallationPhaseStartEvent`: Redefines the module's manifest
+- `setCurrentPhase(phase: string): InstallationPhaseStartEvent`: Redefines the installation phase about to execute
+- `setNextPhases(phases: string[]): InstallationPhaseStartEvent`: Redefines the phases to execute afterward
 
 #### InstallationPhaseEndEvent
 
-This is the instance of the event object received in any `INSTALLATION_EVENTS.PHASE_END` listener.
+This event is triggered during `INSTALLATION_EVENTS.PHASE_END` and provides:
 
 - `getModuleName(): string`: Returns the name of the module being installed
 - `getModulePath(): string`: Returns the path of the module being installed
-- `getPackageInfo(): object`: Returns the content of the `package.json` file of the module being installed
-- `getManifest(): object`: Returns the content of the manifest of the module being installed
-- `getCurrentPhase(): string`: Returns the installation phase that has been executed
-- `getNextPhases(): string[]`: Returns the list of the next phases to execute afterwards
-- `getEnv(): string`: Returns the current [environment](https://github.com/alliage-framework/framework#environment)
+- `getPackageInfo(): object`: Returns the content of the module's `package.json` file
+- `getManifest(): object`: Returns the content of the module's manifest
+- `getCurrentPhase(): string`: Returns the installation phase that was executed
+- `getNextPhases(): string[]`: Returns the list of phases to execute afterward
+- `getEnv(): string`: Returns the current environment
 
 
-### File copy events
+### File Copy Events
 
-```js
+```typescript
+// TypeScript
 import { FILE_COPY_EVENTS } from '@alliage/module-installer';
 ```
 
+
 | Type                                | Event object                                                | Description                           |
 | ----------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
-| `FILE_COPY_EVENTS.BEFORE_COPY_ALL`  | [FileCopyBeforeCopyAllEvent](#filecopybeforecopyallevent)   | Before the execution of the procedure |
-| `FILE_COPY_EVENTS.AFTER_COPY_ALL`   | [FileCopyAfterCopyAllEvent](#installationphasestartevent)   | After the execution of the procedure  |
-| `FILE_COPY_EVENTS.BEFORE_COPY_FILE` | [FileCopyBeforeCopyFileEvent](#filecopybeforecopyfileevent) | Before a file copy                    |
-| `FILE_COPY_EVENTS.AFTER_COPY_FILE`  | [FileCopyAfterCopyFileEvent](#filecopyaftercopyfileevent)   | After a file copy                     |
+| `FILE_COPY_EVENTS.BEFORE_COPY_ALL`  | [FileCopyBeforeCopyAllEvent](#filecopybeforecopyallevent)   | Triggered before the file copy procedure executes |
+| `FILE_COPY_EVENTS.AFTER_COPY_ALL`   | [FileCopyAfterCopyAllEvent](#filecopyaftercopyallevent)   | Triggered after the file copy procedure completes  |
+| `FILE_COPY_EVENTS.BEFORE_COPY_FILE` | [FileCopyBeforeCopyFileEvent](#filecopybeforecopyfileevent) | Triggered before a specific file is copied                    |
+| `FILE_COPY_EVENTS.AFTER_COPY_FILE`  | [FileCopyAfterCopyFileEvent](#filecopyaftercopyfileevent)   | Triggered after a specific file is copied                     |
 
 #### FileCopyBeforeCopyAllEvent
 
-This is the instance of the event object received in any `FILE_COPY_EVENTS.BEFORE_COPY_ALL` listener.
+This event is triggered during `FILE_COPY_EVENTS.BEFORE_COPY_ALL` and provides:
 
 - `getModulePath(): string`: Returns the path of the module being installed
 - `getFilesToCopy(): [string, string][]`: Returns the list of files to copy
-- `setModulePath(path: string): FileCopyBeforeCopyAllEvent`: Allows to re-define the module path
-- `setFilesToCopy(filesToCopy: [string, string][]): FileCopyBeforeCopyAllEvent`: Allows to re-defined the list of files to copy
+- `setModulePath(path: string): FileCopyBeforeCopyAllEvent`: Redefines the module path
+- `setFilesToCopy(filesToCopy: [string, string][]): FileCopyBeforeCopyAllEvent`: Redefines the list of files to copy
 
 #### FileCopyAfterCopyAllEvent
 
-This is the instance of the event object received in any `FILE_COPY_EVENTS.AFTER_COPY_ALL` listener.
+This event is triggered during `FILE_COPY_EVENTS.AFTER_COPY_ALL` and provides:
 
 - `getModulePath(): string`: Returns the path of the module being installed
-- `getCopiedFiles(): [string, string][]`: Returns the list of files that has been copied
+- `getCopiedFiles(): [string, string][]`: Returns the list of files that were copied
 
 #### FileCopyBeforeCopyFileEvent
 
-This is the instance of the event object received in any `FILE_COPY_EVENTS.BEFORE_COPY_FILE` listener.
+This event is triggered during `FILE_COPY_EVENTS.BEFORE_COPY_FILE` and provides:
 
 - `getModulePath(): string`: Returns the path of the module being installed
 - `getSourceFile(): string`: Returns the absolute path of the source file
 - `getDestination(): string`: Returns the absolute path of the destination
-- `setSourceFile(path: string): FileCopyBeforeCopyFileEvent`: Allows to re-define the path of the source file
-- `setDestination(path: string): FileCopyBeforeCopyFileEvent`: Allows to re-defined the path of the destination
+- `setSourceFile(path: string): FileCopyBeforeCopyFileEvent`: Redefines the path of the source file
+- `setDestination(path: string): FileCopyBeforeCopyFileEvent`: Redefines the path of the destination
 
 #### FileCopyAfterCopyFileEvent
 
-This is the instance of the event object received in any `FILE_COPY_EVENTS.AFTER_COPY_FILE` listener.
+This event is triggered during `FILE_COPY_EVENTS.AFTER_COPY_FILE` and provides:
 
 - `getModulePath(): string`: Returns the path of the module being installed
 - `getSourceFile(): string`: Returns the absolute path of the source file

@@ -1,21 +1,27 @@
 # Alliage Parameters Loader
 
-Provides a generic configuration file to store any parameters we could need to configure our application.
+A robust configuration module that provides a flexible way to store and access application parameters within your Alliage projects.
+
+## Overview
+
+This module creates a centralized parameters storage system that any part of your application can access. Define your application's configuration parameters once in a YAML file and consume them anywhere in your services.
 
 ## Dependencies
 
-- [@alliage/di](../dependency-injection)
-- [@alliage/lifecycle](../lifecycle)
-- [@alliage/module-installer](../module-installer)
-- [@alliage/config-loader](../configuration-loader)
+- [@alliage/di](../dependency-injection) - Dependency injection system
+- [@alliage/lifecycle](../lifecycle) - Application lifecycle management
+- [@alliage/module-installer](../module-installer) - Module installation utilities
+- [@alliage/config-loader](../configuration-loader) - Configuration loading system
 
 ## Installation
+
+Using yarn:
 
 ```bash
 yarn add @alliage/parameters-loader
 ```
 
-With npm
+Using npm:
 
 ```bash
 npm install @alliage/parameters-loader
@@ -23,15 +29,19 @@ npm install @alliage/parameters-loader
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+### Automatic Registration
+
+If you have already installed [@alliage/module-installer](../module-installer), simply run:
 
 ```bash
 $(npm bin)/alliage-scripts install @alliage/parameters-loader
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+### Manual Registration
 
-```js
+Alternatively, update your `alliage-modules.json` file to include:
+
+```json
 {
   // ... other modules
   "@alliage/parameters-loader": {
@@ -42,17 +52,16 @@ Otherwise, update your `alliage-modules.json` file to add this at the bottom:
       "@alliage/module-installer",
       "@alliage/config-loader"
     ],
-    "envs": [],
+    "envs": []
   }
 }
 ```
 
 ## Usage
 
-Once installed, a new file located in `config/parameters.yaml` should be available.
-The format of this file is totally free.
+Once installed, a new configuration file will be available at `config/parameters.yaml`. This file accepts any valid YAML structure according to your application's needs.
 
-For example we could have something like that:
+### Example Parameters Configuration
 
 ```yaml
 # config/parameters.yaml
@@ -60,21 +69,26 @@ webserver:
   host: 127.0.0.1
   port: 8080
   credentials:
-    username: thehumblejester
+    username: johnsmith
     password: '411!463|20(|(5'
 ```
 
-Then, everything would be available as a dependency of any service as in the following example:
+### Using Parameters in Your Services
+
+After defining your parameters, they can be injected into any service through the dependency injection system.
+
+#### JavaScript Example
 
 ```js
+// MyModule.js
 import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS } from '@alliage/lifecycle';
 import { parameter } from '@alliage/di';
 
-import { MyService } from './MyService';
+import { MyService } from './MyService.js';
 
-export = class MyModule extends AbstractLifeCycleAwareModule {
-  // ...
-
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  // ... other module methods
+  
   registerServices(serviceContainer) {
     serviceContainer.registerService('my_service', MyService, [
       parameter('parameters.webserver.host'),
@@ -84,3 +98,27 @@ export = class MyModule extends AbstractLifeCycleAwareModule {
   }
 }
 ```
+
+#### TypeScript Example
+
+```ts
+// MyModule.ts
+import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS } from '@alliage/lifecycle';
+import { ServiceContainer, parameter } from '@alliage/di';
+
+import { MyService } from './MyService.js';
+
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  // ... other module methods
+  
+  registerServices(serviceContainer: ServiceContainer) {
+    serviceContainer.registerService('my_service', MyService, [
+      parameter('parameters.webserver.host'),
+      parameter('parameters.webserver.port'),
+      parameter('parameters.webserver.credentials'),
+    ]);
+  }
+}
+```
+
+In both examples, the parameters are accessed using dot notation paths that match your YAML structure. The dependency injection system will automatically resolve and inject these values into your service constructor.

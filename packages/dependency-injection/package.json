@@ -10,6 +10,7 @@
     "dist",
     "LICENSE"
   ],
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alliage-framework/core.git"
+    "url": "https://github.com/alliage-framework/core.git"
   },
   "author": "bo.lebon@gmail.com",
   "license": "GNU",
@@ -35,5 +36,9 @@
   },
   "dependencies": {
     "lodash.get": "^4.4.2"
+  },
+  "devDependencies": {
+    "@types/lodash.get": "^4.4.9",
+    "json-schema-to-ts": "^3.1.1"
   }
 }

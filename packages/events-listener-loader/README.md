@@ -1,19 +1,22 @@
 # Alliage Events Listener Loader
 
-Provides a way to create events listener in an Alliage application without having to create a module
+Create event listeners in your Alliage application with minimal configuration and no need to build a full module.
 
 ## Dependencies
 
 - [@alliage/di](../dependency-injection)
 - [@alliage/lifecycle](../lifecycle)
+- [@alliage/service-loader](../service-loader)
 
 ## Installation
+
+Using yarn:
 
 ```bash
 yarn add @alliage/events-listener-loader
 ```
 
-With npm
+Using npm:
 
 ```bash
 npm install @alliage/events-listener-loader
@@ -21,15 +24,19 @@ npm install @alliage/events-listener-loader
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+### Option 1: Using the Module Installer (Recommended)
+
+If you have already installed [@alliage/module-installer](../module-installer), simply run:
 
 ```bash
-$(npm bin)/alliage-scripts install @alliage/events-listener-manager
+$(npm bin)/alliage-scripts install @alliage/events-listener-loader
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+### Option 2: Manual Registration
 
-```js
+Alternatively, update your `alliage-modules.json` file by adding the following configuration:
+
+```json
 {
   // ... other modules
   "@alliage/events-listener-loader": {
@@ -39,16 +46,23 @@ Otherwise, update your `alliage-modules.json` file to add this at the bottom:
       "@alliage/lifecycle",
       "@alliage/service-loader"
     ],
-    "envs": [],
+    "envs": []
   }
 }
 ```
 
 ## Usage
 
-All we need to do to create an events listener is to create class extending the `AbstractEventsListener` and to register it as a service as we can see below:
+To create an event listener, you need to:
+
+1. Create a class that extends `AbstractEventsListener`
+2. Implement the `getEventHandlers()` method
+3. Register the class as a service using the `Service` decorator
+
+### JavaScript Example
 
 ```js
+// my-events-listener.js
 import { AbstractEventsListener } from '@alliage/events-listener-loader';
 import { RUN_EVENTS } from '@alliage/lifecycle';
 import { Service } from '@alliage/service-loader';
@@ -73,8 +87,43 @@ class MyEventsListener extends AbstractEventsListener {
 export default Service('my_events_listener')(MyEventsListener);
 ```
 
-As we can see in the previous example, all we need to implement the `getEventHandlers` method which must return an object whose key are the events we want to handle and the value are the functions called when an event occurs.
+### TypeScript Example
 
-### Restrictions
+```ts
+import { AbstractEventsListener, EventHandlers } from '@alliage/events-listener-loader';
+import { RUN_EVENTS, AbstractEvent } from '@alliage/lifecycle';
+import { Service } from '@alliage/service-loader';
 
-As the load of the events listeners happens during the initialization phase it's not possible to listen to any event happening duting the initialization phase.
+@Service('my_events_listener')
+export default class MyEventsListener extends AbstractEventsListener {
+  getEventHandlers(): EventHandlers {
+    return {
+      [RUN_EVENTS.PRE_RUN]: this.handlePreRun,
+      [RUN_EVENTS.POST_RUN]: this.handlePostRun,
+    };
+  }
+
+  handlePreRun(): void {
+    process.stdout.write('Test pre run\n');
+  }
+
+  handlePostRun(): void {
+    process.stdout.write('Test post run\n');
+  }
+}
+```
+
+The `getEventHandlers()` method should return an object where:
+- Keys are the event names you want to listen for
+- Values are the handler functions to call when those events occur
+
+Each handler function receives the event object as a parameter and can be synchronous or asynchronous.
+
+## Limitations
+
+Since event listeners are loaded during the application's initialization phase, you cannot listen to events that occur during this phase. Attempting to listen to initialization events will throw an error.
+
+The following initialization events are not available for listening:
+- `INIT_EVENTS.PRE_INIT`
+- `INIT_EVENTS.INIT`
+- `INIT_EVENTS.POST_INIT`

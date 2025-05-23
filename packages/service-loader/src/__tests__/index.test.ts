@@ -1,5 +1,6 @@
-import glob from 'glob';
-import path from 'path';
+import { glob } from 'glob';
+import * as path from 'path';
+import { describe, it, expect, afterEach, vi, MockInstance } from 'vitest';
 
 import { INITIALIZATION_CONTEXT, Arguments } from '@alliage/framework';
 
@@ -18,8 +19,8 @@ import {
   ServiceLoaderAfterAllEvent,
 } from '../events';
 
-jest.mock('@alliage/config-loader');
-jest.mock('glob', () => jest.fn());
+vi.mock('@alliage/config-loader');
+vi.mock('glob', () => ({ glob: vi.fn() }));
 
 describe('service-loader', () => {
   describe('ServiceLoaderModule', () => {
@@ -29,8 +30,8 @@ describe('service-loader', () => {
       it('should listen to CONFIG_EVENTS.LOAD and INIT_EVENTS.POST_INIT events', () => {
         const validateMockReturnValue = () => {};
         const loadConfigMockReturnValue = () => {};
-        (validators.jsonSchema as jest.Mock).mockReturnValueOnce(validateMockReturnValue);
-        (loadConfig as jest.Mock).mockReturnValueOnce(loadConfigMockReturnValue);
+        (validators.jsonSchema as unknown as MockInstance).mockReturnValueOnce(validateMockReturnValue);
+        (loadConfig as unknown as MockInstance).mockReturnValueOnce(loadConfigMockReturnValue);
 
         expect(module.getEventHandlers()).toEqual({
           [CONFIG_EVENTS.LOAD]: loadConfigMockReturnValue,
@@ -53,13 +54,13 @@ describe('service-loader', () => {
         exclude: ['**/__tests__/**'],
       });
 
-      const globSpy = (glob as unknown) as jest.Mock;
-      const registerServiceSpy = jest.spyOn(serviceContainer, 'registerService');
+      const globSpy = glob as unknown as MockInstance<typeof glob>;
+      const registerServiceSpy = vi.spyOn(serviceContainer, 'registerService');
 
-      const beforeAllHandler = jest.fn();
-      const afterAllHandler = jest.fn();
-      const beforeOneHandler = jest.fn();
-      const afterOneHandler = jest.fn();
+      const beforeAllHandler = vi.fn();
+      const afterAllHandler = vi.fn();
+      const beforeOneHandler = vi.fn();
+      const afterOneHandler = vi.fn();
 
       eventManager.on(SERVICE_LOADER_EVENTS.BEFORE_ALL, beforeAllHandler);
       eventManager.on(SERVICE_LOADER_EVENTS.AFTER_ALL, afterAllHandler);
@@ -67,8 +68,8 @@ describe('service-loader', () => {
       eventManager.on(SERVICE_LOADER_EVENTS.AFTER_ONE, afterOneHandler);
 
       afterEach(() => {
-        jest.clearAllMocks();
-        jest.resetModules();
+        vi.clearAllMocks();
+        vi.resetModules();
       });
 
       const initEvent = new LifeCycleInitEvent(INIT_EVENTS.INIT, {
@@ -79,16 +80,14 @@ describe('service-loader', () => {
       });
 
       it('should load all the services according to the configuration', async () => {
-        globSpy.mockImplementationOnce((_path: string, _options: any, callback: Function) => {
-          callback(null, ['/path/to/src/services/dummy-service']);
-        });
+        globSpy.mockResolvedValueOnce(['/path/to/src/services/dummy-service']);
 
         @Service('dummy_service', [service('other_service')])
         class DummyService {}
 
         class OverridenDummyService {}
 
-        jest.doMock('/path/to/src/services/dummy-service', () => DummyService, { virtual: true });
+        vi.doMock('/path/to/src/services/dummy-service', () => ({ default: DummyService }));
 
         beforeAllHandler.mockImplementationOnce((event: ServiceLoaderBeforeAllEvent) => {
           expect(event.getBasePath()).toEqual('src');
@@ -137,8 +136,7 @@ describe('service-loader', () => {
             absolute: true,
             nodir: true,
             ignore: ['overriden/**/__tests__/**'],
-          },
-          expect.any(Function),
+          }
         );
 
         expect(beforeAllHandler).toHaveBeenCalledTimes(1);
@@ -149,9 +147,7 @@ describe('service-loader', () => {
 
       it('should throw an error if the glob fails', async () => {
         const error = new Error();
-        globSpy.mockImplementationOnce((_path: string, _options: any, callback: Function) => {
-          callback(error);
-        });
+        globSpy.mockRejectedValueOnce(error);
 
         let thrownError: Error;
         try {
@@ -164,13 +160,11 @@ describe('service-loader', () => {
       });
 
       it('should not load the service if it does not use the @Service decorator', async () => {
-        globSpy.mockImplementationOnce((_path: string, _options: any, callback: Function) => {
-          callback(null, ['/path/to/src/services/dummy-service']);
-        });
+        globSpy.mockResolvedValueOnce(['/path/to/src/services/dummy-service']);
 
         class DummyService {}
 
-        jest.doMock('/path/to/src/services/dummy-service', () => DummyService, { virtual: true });
+        vi.doMock('/path/to/src/services/dummy-service', () => ({ default: DummyService }));
 
         await module.handleInit(initEvent);
 
@@ -183,11 +177,9 @@ describe('service-loader', () => {
       });
 
       it('should not load the service if it does export a default module', async () => {
-        globSpy.mockImplementationOnce((_path: string, _options: any, callback: Function) => {
-          callback(null, ['/path/to/src/services/dummy-service']);
-        });
+        globSpy.mockResolvedValueOnce(['/path/to/src/services/dummy-service']);
 
-        jest.doMock('/path/to/src/services/dummy-service', () => null, { virtual: true });
+        vi.doMock('/path/to/src/services/dummy-service', () => ({ default: undefined }));
 
         await module.handleInit(initEvent);
 
@@ -200,15 +192,13 @@ describe('service-loader', () => {
       });
 
       it('should use a empty array as default value for the "exclude" parameter', async () => {
-        globSpy.mockImplementationOnce((_path: string, _options: any, callback: Function) => {
-          callback(null, ['/path/to/src/services/dummy-service']);
-        });
+        globSpy.mockResolvedValueOnce(['/path/to/src/services/dummy-service']);
         serviceContainer.getParameter<Config>(CONFIG_NAME).exclude = undefined;
 
         @Service('other_dummy_service', [service('other_service')])
         class DummyService {}
 
-        jest.doMock('/path/to/src/services/dummy-service', () => DummyService, { virtual: true });
+        vi.doMock('/path/to/src/services/dummy-service', () => ({ default: DummyService }));
 
         await module.handleInit(initEvent);
 
@@ -225,8 +215,7 @@ describe('service-loader', () => {
             absolute: true,
             nodir: true,
             ignore: [],
-          },
-          expect.any(Function),
+          }
         );
 
         expect(beforeAllHandler).toHaveBeenCalledTimes(1);
@@ -236,4 +225,4 @@ describe('service-loader', () => {
       });
     });
   });
-});
+}); 

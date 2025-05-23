@@ -65,7 +65,10 @@ export class FileCopyAfterCopyAllEvent extends AbstractFileCopyEvent<
   }
 
   static getParams(modulePath: string, filesToCopy: string[][]) {
-    return super.getParams(modulePath, filesToCopy);
+    return super.getParams(modulePath, filesToCopy) as [
+      FILE_COPY_EVENTS.AFTER_COPY_ALL,
+      FileCopyAfterCopyAllEvent,
+    ];
   }
 }
 
@@ -130,6 +133,9 @@ export class FileCopyAfterCopyFileEvent extends AbstractFileCopyEvent<
   }
 
   static getParams(modulePath: string, sourceFile: string, destination: string) {
-    return super.getParams(modulePath, sourceFile, destination);
+    return super.getParams(modulePath, sourceFile, destination) as [
+      FILE_COPY_EVENTS.AFTER_COPY_FILE,
+      FileCopyAfterCopyFileEvent,
+    ];
   }
 }

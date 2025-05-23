@@ -1,11 +1,12 @@
-import glob from 'glob';
-import fse from 'fs-extra';
-import path from 'path';
+import { glob } from 'glob';
+import { copy, pathExists } from 'fs-extra';
+import * as path from 'path';
+import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 
 import { EventManager } from '@alliage/lifecycle';
 
-import { FileCopyInstallationProcedure, FileCopyManifest } from '..';
-import { MODULE_TYPE, Manifest } from '../../../schemas/manifest';
+import { FileCopyInstallationProcedure } from '..';
+import { MODULE_TYPE } from '../../../schemas/manifest';
 import {
   FILE_COPY_EVENTS,
   FileCopyBeforeCopyAllEvent,
@@ -14,7 +15,20 @@ import {
   FileCopyAfterCopyAllEvent,
 } from '../events';
 
-jest.mock('glob', () => jest.fn());
+vi.mock('glob', () => {
+  return {
+    glob: vi.fn(),
+  };
+});
+
+vi.mock(import('fs-extra'), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    copy: vi.fn(),
+    pathExists: vi.fn(),
+  };
+});
 
 describe('module-installer/installation-procedures/file-copy', () => {
   describe('FileCopyInstallationProcedure', () => {
@@ -23,53 +37,54 @@ describe('module-installer/installation-procedures/file-copy', () => {
 
     describe('#getName', () => {
       it('should return the name of the procedure', () => {
-        expect(procedure.getName()).toEqual('@module-installer/INSTALLATION_PROCEDURE/FILE_COPY');
+        expect(procedure.getName()).toEqual('copyFiles');
       });
     });
 
     describe('#getSchema', () => {
       it("should return the JSON Schema of it's configuration in the manifest", () => {
-        expect(procedure.getSchema()).toEqual({
-          copyFiles: {
+        expect(procedure.getParamsSchema()).toEqual({
+          type: 'array',
+          items: {
             type: 'array',
-            items: {
-              type: 'array',
-              items: [
-                {
-                  type: 'string',
-                  description: 'Source',
-                },
-                {
-                  type: 'string',
-                  description: 'Destination',
-                },
-              ],
-            },
+            items: [
+              {
+                type: 'string',
+                description: 'Source',
+              },
+              {
+                type: 'string',
+                description: 'Destination',
+              },
+            ],
+            minItems: 2,
+            maxItems: 2,
+            additionalItems: false,
           },
         });
       });
     });
 
     describe('#proceed', () => {
-      let globMock: jest.SpyInstance;
-      let copySpy: jest.SpyInstance;
-      let existsSpy: jest.SpyInstance;
+      let globMock: MockInstance;
+      let copyMock: MockInstance;
+      let pathExistsMock: MockInstance;
 
-      const manifest: Manifest<FileCopyManifest> = {
+      const manifest = {
         type: MODULE_TYPE.MODULE,
         dependencies: [],
         installationProcedures: {
           copyFiles: [
             ['path/to/file1*', 'destination1'],
             ['path/to/file2*', 'destination2'],
-          ],
+          ] as [string, string][],
         },
       };
 
-      const beforeCopyAllEventHandler = jest.fn();
-      const afterCopyAllEventHandler = jest.fn();
-      const beforeCopyFileEventHandler = jest.fn();
-      const afterCopyFileEventHandler = jest.fn();
+      const beforeCopyAllEventHandler = vi.fn();
+      const afterCopyAllEventHandler = vi.fn();
+      const beforeCopyFileEventHandler = vi.fn();
+      const afterCopyFileEventHandler = vi.fn();
 
       eventManager.on(FILE_COPY_EVENTS.BEFORE_COPY_ALL, beforeCopyAllEventHandler);
       eventManager.on(FILE_COPY_EVENTS.AFTER_COPY_ALL, afterCopyAllEventHandler);
@@ -77,20 +92,23 @@ describe('module-installer/installation-procedures/file-copy', () => {
       eventManager.on(FILE_COPY_EVENTS.AFTER_COPY_FILE, afterCopyFileEventHandler);
 
       beforeEach(() => {
-        globMock = ((glob as unknown) as jest.Mock)
-          .mockImplementationOnce((_path: string, callback: Function) =>
-            callback(null, ['/path/to/module/path/to/file11', '/path/to/module/path/to/file12']),
-          )
-          .mockImplementationOnce((_path: string, callback: Function) =>
-            callback(null, ['/path/to/module/path/to/file21', '/path/to/module/path/to/file22']),
-          );
-        copySpy = jest.spyOn(fse, 'copy').mockResolvedValue(undefined as never);
-        existsSpy = jest.spyOn(fse, 'pathExists').mockResolvedValue(false as never);
+        globMock = glob as unknown as MockInstance;
+        globMock
+          .mockResolvedValueOnce([
+            '/path/to/module/path/to/file11',
+            '/path/to/module/path/to/file12',
+          ])
+          .mockResolvedValueOnce([
+            '/path/to/module/path/to/file21',
+            '/path/to/module/path/to/file22',
+          ]);
+
+        copyMock = (copy as unknown as MockInstance).mockResolvedValue(undefined as never);
+        pathExistsMock = (pathExists as unknown as MockInstance).mockResolvedValue(false as never);
       });
 
       afterEach(() => {
-        jest.restoreAllMocks();
-        jest.resetAllMocks();
+        vi.resetAllMocks();
       });
 
       it('should proceed to file copy according to the manifest configuration and trigger all the events', async () => {
@@ -198,30 +216,28 @@ describe('module-installer/installation-procedures/file-copy', () => {
         expect(globMock).toHaveBeenNthCalledWith(
           1,
           '/transformed/path/to/module/transformed/path/to/file1*',
-          expect.any(Function),
         );
         expect(globMock).toHaveBeenNthCalledWith(
           2,
           '/transformed/path/to/module/transformed/path/to/file2*',
-          expect.any(Function),
         );
 
-        expect(copySpy).toHaveBeenNthCalledWith(
+        expect(copyMock).toHaveBeenNthCalledWith(
           1,
           '/re/transformed/path/to/module/transformed/path/to/file11',
           '/re/transformed/destination1',
         );
-        expect(copySpy).toHaveBeenNthCalledWith(
+        expect(copyMock).toHaveBeenNthCalledWith(
           2,
           '/re/transformed/path/to/module/transformed/path/to/file12',
           '/re/transformed/destination1',
         );
-        expect(copySpy).toHaveBeenNthCalledWith(
+        expect(copyMock).toHaveBeenNthCalledWith(
           3,
           '/re/transformed/path/to/module/transformed/path/to/file21',
           '/re/transformed/destination2',
         );
-        expect(copySpy).toHaveBeenNthCalledWith(
+        expect(copyMock).toHaveBeenNthCalledWith(
           4,
           '/re/transformed/path/to/module/transformed/path/to/file22',
           '/re/transformed/destination2',
@@ -236,26 +252,28 @@ describe('module-installer/installation-procedures/file-copy', () => {
       it('should throw an error if the glob fails', async () => {
         const error = new Error();
         globMock.mockReset();
-        globMock.mockImplementation((_path: string, callback: Function) => {
-          callback(error);
-        });
+        globMock.mockRejectedValueOnce(error);
 
-        let thrownError: Error;
+        let thrownError: Error | undefined;
         try {
           await procedure.proceed(manifest, '/path/to/module');
         } catch (e) {
-          thrownError = e;
+          thrownError = e as Error;
         }
 
-        expect(thrownError!).toBe(error);
+        expect(thrownError).toBe(error);
       });
 
       it("should not do anything if there's no configuration for the procedure in the manifest", async () => {
-        await procedure.proceed({ ...manifest, installationProcedures: {} }, '/path/to/module');
+        const manifestWithoutCopyFiles = {
+          ...manifest,
+          installationProcedures: {},
+        };
+        await procedure.proceed(manifestWithoutCopyFiles as any, '/path/to/module');
 
         expect(globMock).not.toHaveBeenCalled();
-        expect(existsSpy).not.toHaveBeenCalled();
-        expect(copySpy).not.toHaveBeenCalled();
+        expect(pathExistsMock).not.toHaveBeenCalled();
+        expect(copyMock).not.toHaveBeenCalled();
         expect(beforeCopyAllEventHandler).not.toHaveBeenCalled();
         expect(beforeCopyFileEventHandler).not.toHaveBeenCalled();
         expect(afterCopyFileEventHandler).not.toHaveBeenCalled();
@@ -263,7 +281,7 @@ describe('module-installer/installation-procedures/file-copy', () => {
       });
 
       it('should not do the copy and trigger the related events if the destination already exits', async () => {
-        existsSpy
+        pathExistsMock
           .mockResolvedValueOnce(true)
           .mockResolvedValueOnce(false)
           .mockResolvedValueOnce(true)
@@ -272,26 +290,18 @@ describe('module-installer/installation-procedures/file-copy', () => {
         await procedure.proceed(manifest, '/path/to/module');
 
         expect(globMock).toHaveBeenCalledTimes(2);
-        expect(globMock).toHaveBeenNthCalledWith(
-          1,
-          '/path/to/module/path/to/file1*',
-          expect.any(Function),
-        );
-        expect(globMock).toHaveBeenNthCalledWith(
-          2,
-          '/path/to/module/path/to/file2*',
-          expect.any(Function),
-        );
+        expect(globMock).toHaveBeenNthCalledWith(1, '/path/to/module/path/to/file1*');
+        expect(globMock).toHaveBeenNthCalledWith(2, '/path/to/module/path/to/file2*');
 
-        expect(existsSpy).toHaveBeenCalledTimes(4);
+        expect(pathExistsMock).toHaveBeenCalledTimes(4);
 
-        expect(copySpy).toHaveBeenCalledTimes(2);
-        expect(copySpy).toHaveBeenNthCalledWith(
+        expect(copyMock).toHaveBeenCalledTimes(2);
+        expect(copyMock).toHaveBeenNthCalledWith(
           1,
           '/path/to/module/path/to/file12',
           path.resolve('destination1'),
         );
-        expect(copySpy).toHaveBeenNthCalledWith(
+        expect(copyMock).toHaveBeenNthCalledWith(
           2,
           '/path/to/module/path/to/file22',
           path.resolve('destination2'),

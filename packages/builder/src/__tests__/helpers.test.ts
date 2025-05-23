@@ -1,4 +1,5 @@
 import { injectEnvironment } from '../helpers';
+import { describe, it, expect } from 'vitest';
 
 describe('builder/helpers', () => {
   describe('injectEnvironment', () => {
@@ -24,4 +25,4 @@ describe('builder/helpers', () => {
       });
     });
   });
-});
+}); 

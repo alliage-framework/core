@@ -1,6 +1,10 @@
 # Alliage Error Handler
 
-Module allowing to display exceptions gracefully.
+A robust module for gracefully displaying exceptions in your Alliage applications.
+
+## Overview
+
+The Error Handler module captures uncaught exceptions and unhandled promises, displaying them with rich formatting and detailed context to simplify debugging.
 
 ## Installation
 
@@ -8,7 +12,7 @@ Module allowing to display exceptions gracefully.
 yarn add @alliage/error-handler
 ```
 
-With npm
+Or with npm:
 
 ```bash
 npm install @alliage/error-handler
@@ -16,53 +20,91 @@ npm install @alliage/error-handler
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+### Using the Module Installer (Recommended)
+
+If you have [@alliage/module-installer](../module-installer) already installed, simply run:
 
 ```bash
 $(npm bin)/alliage-scripts install @alliage/error-handler
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+### Manual Registration
 
-```js
+Alternatively, update your `alliage-modules.json` file by adding this entry:
+
+```json
 {
   // ... other modules
   "@alliage/error-handler": {
     "module": "@alliage/error-handler",
     "deps": [],
-    "envs": [],
+    "envs": []
   }
 }
 ```
 
-## Usage
+## How It Works
 
-Once installed and registered, the module will work right away without having to do anything specific.
+Once installed and registered, the Error Handler works automatically without any additional configuration. It enhances error reporting by displaying:
 
-The goal of this module is to display as much details as possible about uncaught exceptions or unhandled rejections.<br />
-Basically, it will display:
-- The name of the error (class name)
-- The message
-- The stacktrace
-- Any public property that is not part of the Error prototype.
+- Error type (class name)
+- Error message
+- Complete stack trace
+- Any custom properties added to the error object
 
-So, if you write your own alliage module, don't hesitate to create your custom Error classes and to add as much context as possible in it to let the developers using your module debug their application easily !
+## Creating Custom Errors
 
-Example:
+When developing Alliage modules, consider creating custom error classes with additional context to make debugging easier.
+
+### JavaScript Example
 
 ```js
-class HttpError extends Error {
+// customErrors.js
+export class HttpError extends Error {
   constructor(status, body) {
-    super('An HTTP error occured !');
-
-    // These two additional properties will
-    // be displayed if the error is uncaught
+    super('An HTTP error occurred');
+    this.name = 'HttpError'; // Class name for better identification
     this.status = status;
     this.body = body;
   }
 }
 
-// Later...
+// Usage example
+import { HttpError } from './customErrors.js';
 
-throw new HttpError(404, 'Not found');
+// This error will be caught and displayed with the status and body properties
+throw new HttpError(404, 'Resource not found');
 ```
+
+### TypeScript Example
+
+```ts
+// customErrors.ts
+export class HttpError extends Error {
+  status: number;
+  body: string;
+
+  constructor(status: number, body: string) {
+    super('An HTTP error occurred');
+    this.name = 'HttpError'; // Class name for better identification
+    this.status = status;
+    this.body = body;
+  }
+}
+
+// Usage example
+import { HttpError } from './customErrors.js';
+
+// This error will be caught and displayed with the status and body properties
+throw new HttpError(404, 'Resource not found');
+```
+
+## Error Display Format
+
+When an uncaught error occurs, the Error Handler formats the output to clearly show all available information:
+
+- The error type and message displayed with a red background
+- All custom properties listed with their values
+- Complete stack trace for identifying the error source
+
+This makes debugging significantly easier, especially for complex applications with custom error types.

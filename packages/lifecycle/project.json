@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/lifecycle",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

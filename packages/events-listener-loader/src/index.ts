@@ -6,7 +6,7 @@ import {
 } from '@alliage/lifecycle';
 import { Constructor } from '@alliage/di';
 
-import { AbstractEventsListener } from './events-listener';
+import { AbstractEventsListener } from './events-listener/index.js';
 
 const UNAVAILABLE_EVENTS: string[] = [
   INIT_EVENTS.PRE_INIT,
@@ -42,4 +42,4 @@ export default class EventsListernerLoaderModule extends AbstractLifeCycleAwareM
   };
 }
 
-export * from './events-listener';
+export * from './events-listener/index.js';

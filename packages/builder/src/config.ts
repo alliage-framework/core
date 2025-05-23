@@ -1,11 +1,16 @@
+import { asConst, FromSchema } from 'json-schema-to-ts';
+
 export const CONFIG_NAME = 'builder';
-export const schema = {
+export const schema = asConst({
   type: 'object',
+  additionalProperties: false,
+  required: ['tasks'],
   properties: {
     tasks: {
       type: 'array',
       items: {
         type: 'object',
+        additionalProperties: false,
         required: ['name', 'description', 'params'],
         properties: {
           name: {
@@ -22,12 +27,6 @@ export const schema = {
       },
     },
   },
-};
+});
 
-export interface Config {
-  tasks: {
-    name: string;
-    description: string;
-    params: any;
-  }[];
-}
+export type Config = FromSchema<typeof schema>;

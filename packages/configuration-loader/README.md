@@ -1,6 +1,6 @@
 # Alliage Configuration Loader
 
-Module allowing to load YAML configuration files.
+A powerful module for loading and validating YAML configuration files in your Alliage applications.
 
 ## Dependencies
 
@@ -9,130 +9,154 @@ Module allowing to load YAML configuration files.
 ## Installation
 
 ```bash
+# Using yarn
 yarn add @alliage/config-loader
-```
 
-With npm
-
-```bash
+# Using npm
 npm install @alliage/config-loader
 ```
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+If you've already installed [@alliage/module-installer](../module-installer), simply run:
 
 ```bash
 $(npm bin)/alliage-scripts install @alliage/config-loader
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+Otherwise, update your `alliage-modules.json` file by adding this to the bottom:
 
-```js
+```json
 {
   // ... other modules
   "@alliage/config-loader": {
     "module": "@alliage/config-loader",
     "deps": [
-      "@alliage/lifecycle",
+      "@alliage/lifecycle"
     ],
-    "envs": [],
+    "envs": []
   }
 }
 ```
 
-## Usage
+## Usage Guide
 
-### Create a configuration file
+### Creating a Configuration File
 
-The first thing to do here is to create a configuration file.
-It can be named the way we want but must end with the `.yaml` extension and be located in the `config` folder of the project.
+First, create a YAML configuration file in the `config` folder of your project. The file name can be anything you prefer, but it must have a `.yaml` extension.
 
-Here's an example of a valid configuration file:
+Example configuration file:
 
 ```yaml
 # config/webserver.yaml
 host: 127.0.0.1
 port: 8080
 credentials:
-  username: thehumblejester
+  username: johndoe
   password: '411!463|20(|(5'
 ```
 
-### Load the configuration file
+### Loading the Configuration File
 
-Once the file created, we just have to load it. To do so, we'll need to listen to the `CONFIG_EVENTS.LOAD` event and to use the `loadConfig` helper.
+To load your configuration file, listen to the `CONFIG_EVENTS.LOAD` event and use the `loadConfig` helper function.
 
-```js
+#### JavaScript Example
+
+```javascript
+// MyModule.js
 import { AbstractLifeCycleAwareModule } from '@alliage/lifecycle';
 import { CONFIG_EVENTS, loadConfig, validators } from '@alliage/config-loader';
 
-const schema = {
-  // ...
-}
-
-export = class MyModule extends AbstractLifeCycleAwareModule {
-  getEventHandlers() {
-    return {
-      [CONFIG_EVENTS.LOAD]: loadConfig('webserver', validators.jsonSchema(schema)),
-    };
-  }
-};
-```
-
-We see that the `loadConfig` function takes 2 parameters.
-The first one is the name of your configuration file (without the `.yaml` at the end) and the second one is a validation function that you can easily create with the `validate` helper.
-
-### Validate the configuration file
-
-Validating the file allows to make sure the user don't input invalid parameters that could break our app.
-
-There's two way to validate the file:
-
-- Create our own validation function which will throw an error in case invalid configuration
-- Use the `validate` helper
-
-The `validate` helper helps you to generate a validation function from a [JSON Schema](https://json-schema.org/).
-
-If we take our previous example, we could write the following schema for our config file:
-
-```js
+// Define your JSON schema for validation
 const schema = {
   type: 'object',
   required: ['host', 'port', 'credentials'],
   properties: {
-    host: {
-      type: 'string',
-    },
-    port: {
-      type: 'number',
-    },
+    host: { type: 'string' },
+    port: { type: 'number' },
     credentials: {
       type: 'object',
       required: ['username', 'password'],
       properties: {
-        username: {
-          type: 'string',
-        },
-        password: {
-          type: 'string',
-        },
-      },
-    },
-  },
+        username: { type: 'string' },
+        password: { type: 'string' }
+      }
+    }
+  }
 };
+
+export class MyModule extends AbstractLifeCycleAwareModule {
+  getEventHandlers() {
+    return {
+      [CONFIG_EVENTS.LOAD]: loadConfig('webserver', validators.jsonSchema(schema))
+    };
+  }
+}
+
+export default MyModule;
 ```
 
-### Inject environment variables
+#### TypeScript Example
 
-At some point, we might want our app to be configurable through environment variables.
-This can be useful for several reasons:
+```typescript
+// MyModule.ts
+import { AbstractLifeCycleAwareModule } from '@alliage/lifecycle';
+import { CONFIG_EVENTS, loadConfig, validators } from '@alliage/config-loader';
 
-- Avoid to expose sensitive data such as passwords or API keys
-- Have a different configuration depending on where the app is executed (local, production, etc...)
-- Etc...
+// Define your JSON schema for validation
+const schema = {
+  type: 'object',
+  required: ['host', 'port', 'credentials'],
+  properties: {
+    host: { type: 'string' },
+    port: { type: 'number' },
+    credentials: {
+      type: 'object',
+      required: ['username', 'password'],
+      properties: {
+        username: { type: 'string' },
+        password: { type: 'string' }
+      }
+    }
+  }
+};
 
-In a configuration file, we have the possibility to inject env variables by using the `$(ENV_VARIABLE_NAME)` syntax.
+export class MyModule extends AbstractLifeCycleAwareModule {
+  getEventHandlers() {
+    return {
+      [CONFIG_EVENTS.LOAD]: loadConfig('webserver', validators.jsonSchema(schema))
+    };
+  }
+}
+
+export default MyModule;
+```
+
+The `loadConfig` function takes two parameters:
+1. The name of your configuration file (without the `.yaml` extension)
+2. A validation function that you can create using the `validators.jsonSchema` helper
+
+### Validating Configuration Files
+
+Validation ensures that users don't input invalid parameters that could break your application. There are two ways to validate a configuration file:
+
+1. Create your own validation function that throws an error if the configuration is invalid
+2. Use the built-in `validators.jsonSchema` helper with a [JSON Schema](https://json-schema.org/)
+
+For the example above, we used a JSON schema to validate our configuration file. This schema ensures that:
+- The configuration is an object
+- It has required properties: `host`, `port`, and `credentials`
+- Each property has the correct type
+- The `credentials` object has required `username` and `password` properties
+
+### Injecting Environment Variables
+
+You can make your application configurable through environment variables, which is useful for:
+- Hiding sensitive data like passwords or API keys
+- Having different configurations based on the execution environment
+- And more
+
+To inject environment variables in your configuration file, use the `$(ENV_VARIABLE_NAME)` syntax:
 
 ```yaml
 # config/webserver.yaml
@@ -143,9 +167,9 @@ credentials:
   password: '$(WEBSERVER_PASSWORD)'
 ```
 
-#### Type conversion
+#### Type Conversion
 
-As env variables only contains string we also have the possibility to convert them in any type like so:
+Since environment variables are always strings, you can convert them to other types using this syntax:
 
 ```yaml
 # config/webserver.yaml
@@ -153,17 +177,18 @@ host: 127.0.0.1
 port: '$(WEBSERVER_PORT:number)' # convert to number
 use_https: '$(WEBSERVER_USE_HTTPS:boolean)' # convert to boolean
 whitelisted_ips: '$(WEBSERVER_WHITELISTED_IPS:array)' # convert to array
-credentials: '$(WEBSERVER_CREDENTIALS:json)' # parse as json
+credentials: '$(WEBSERVER_CREDENTIALS:json)' # parse as JSON
 ```
 
-- `number`: Just converts the value to number using `parseFloat`
-- `boolean`: If the value is equal to `undefined`, `"0"` or `"false"` it will be considered as `false`, otherwise it will be `true`.
-- `array`: Will split the string into an array of strings by using `,` as separator
-- `json`: Will just parse the value as JSON by using `JSON.parse`
+Available conversions:
+- `number`: Converts the value to a number using `parseFloat`
+- `boolean`: Returns `false` if the value is `undefined`, `"0"`, or `"false"`, otherwise returns `true`
+- `array`: Splits the string into an array of strings using `,` as a separator
+- `json`: Parses the value as JSON using `JSON.parse`
 
-#### Default value
+#### Default Values
 
-If there's a chance that our env variables are not defined we can also define default values by using the `?` operator like so:
+You can provide default values for environment variables that might not be defined using the `?` operator:
 
 ```yaml
 # config/webserver.yaml
@@ -171,20 +196,22 @@ host: '$(WEBSERVER_HOST?127.0.0.1)'
 port: '$(WEBSERVER_PORT:number?8080)'
 use_https: '$(WEBSERVER_USE_HTTPS:boolean?true)'
 whitelisted_ips: '$(WEBSERVER_WHITELISTED_IPS:array?192.168.0.12,192.168.0.25)'
-credentials: '$(WEBSERVER_CREDENTIALS:json?{"username": "thehumblejester", "password": "411!463|20(|(5"})'
+credentials: '$(WEBSERVER_CREDENTIALS:json?{"username": "johndoe", "password": "411!463|20(|(5"})'
 ```
 
-### Access the configuration parameters
+### Accessing Configuration Parameters
 
-Once loaded, the configuration file content will be injected in the [service container parameters](../dependency-injection#parameterpath-string--parameters-object--stringbooleannumberobjectarray) so you can just require them as dependency of any of your services as you can see below:
+Once loaded, the configuration is injected into the [service container parameters](../dependency-injection#parameterpath-string--parameters-object--stringbooleannumberobjectarray), allowing you to access them in your services:
 
-```js
-import { AbstractLifeCycleAwareModule, INIT_EVENTS, RUN_EVENTS } from '@alliage/lifecycle';
+#### JavaScript Example
+
+```javascript
+// MyModule.js
+import { AbstractLifeCycleAwareModule, INIT_EVENTS } from '@alliage/lifecycle';
 import { parameter } from '@alliage/di';
+import { MyService } from './MyService.js';
 
-import { MyService } from './MyService';
-
-export = class MyModule extends AbstractLifeCycleAwareModule {
+export class MyModule extends AbstractLifeCycleAwareModule {
   // ...
 
   registerServices(serviceContainer) {
@@ -192,95 +219,121 @@ export = class MyModule extends AbstractLifeCycleAwareModule {
       parameter('webserver.host'),
       parameter('webserver.port'),
       parameter('webserver.credentials.username'),
-      parameter('webserver.credentials.password'),
+      parameter('webserver.credentials.password')
     ]);
   }
 }
+
+export default MyModule;
 ```
 
-As you can see, the first part of the path is actually the name of your configuration file (without the `.yaml` extension) and the rest of the path just matches the tree structure of the config file.
+#### TypeScript Example
+
+```typescript
+// MyModule.ts
+import { AbstractLifeCycleAwareModule, INIT_EVENTS } from '@alliage/lifecycle';
+import { ServiceContainer, parameter } from '@alliage/di';
+import { MyService } from './MyService.js';
+
+export class MyModule extends AbstractLifeCycleAwareModule {
+  // ...
+
+  registerServices(serviceContainer: ServiceContainer): void {
+    serviceContainer.registerService('my_service', MyService, [
+      parameter('webserver.host'),
+      parameter('webserver.port'),
+      parameter('webserver.credentials.username'),
+      parameter('webserver.credentials.password')
+    ]);
+  }
+}
+
+export default MyModule;
+```
+
+The parameter path starts with the name of your configuration file (without the `.yaml` extension), followed by the tree structure of your configuration.
 
 ## Events
 
-### Config events
+### Configuration Events
 
-```js
+```javascript
 import { CONFIG_EVENTS } from '@alliage/config-loader';
 ```
 
-| Type                                         | Event object                                                                | Description                                                        |
-| -------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `CONFIG_EVENTS.PRE_LOAD`                     | [ConfigPreLoadEvent](#configpreloadevent)                                   | Before loader all configuration files                              |
-| `CONFIG_EVENTS.LOAD`                         | [ConfigLoadEvent](#configloadevent)                                         | Registration of configuration files and validators                 |
-| `CONFIG_EVENTS.PRE_FILE_LOAD`                | [ConfigPreFileLoadEvent](#configprefileloadevent)                           | Before reading one configuration file                              |
-| `CONFIG_EVENTS.PRE_FILE_PARSE`               | [ConfigPreFileParseEvent](#configprefileparseevent)                         | Before parsing YAML content of one configuration file              |
-| `CONFIG_EVENTS.POST_FILE_PARSE`              | [ConfigPostFileParseEvent](#configpostfileparseevent)                       | After parsing YAML content of one configuration file               |
-| `CONFIG_EVENTS.POST_ENV_VARIABLES_INJECTION` | [ConfigPostEnvVariableInjectionEvent](#configpostenvvariableinjectionevent) | After having injected env variables of one configuration file      |
-| `CONFIG_EVENTS.POST_FILE_LOAD`               | [ConfigPostFileLoadEvent](#configpostfileloadevent)                         | After having loaded on configuration file in the service container |
-| `CONFIG_EVENTS.POST_LOAD`                    | [ConfigPostLoadEvent](#configpostloadevent)                                 | After having loaded all configuration files                        |
+| Event Type | Event Object | Description |
+|------------|--------------|-------------|
+| `CONFIG_EVENTS.PRE_LOAD` | [ConfigPreLoadEvent](#configpreloadevent) | Triggered before loading all configuration files |
+| `CONFIG_EVENTS.LOAD` | [ConfigLoadEvent](#configloadevent) | Used for registering configuration files and validators |
+| `CONFIG_EVENTS.PRE_FILE_LOAD` | [ConfigPreFileLoadEvent](#configprefileloadevent) | Triggered before reading a configuration file |
+| `CONFIG_EVENTS.PRE_FILE_PARSE` | [ConfigPreFileParseEvent](#configprefileparseevent) | Triggered before parsing YAML content |
+| `CONFIG_EVENTS.POST_FILE_PARSE` | [ConfigPostFileParseEvent](#configpostfileparseevent) | Triggered after parsing YAML content |
+| `CONFIG_EVENTS.POST_ENV_VARIABLES_INJECTION` | [ConfigPostEnvVariableInjectionEvent](#configpostenvvariableinjectionevent) | Triggered after injecting environment variables |
+| `CONFIG_EVENTS.POST_FILE_LOAD` | [ConfigPostFileLoadEvent](#configpostfileloadevent) | Triggered after loading a configuration file into the service container |
+| `CONFIG_EVENTS.POST_LOAD` | [ConfigPostLoadEvent](#configpostloadevent) | Triggered after loading all configuration files |
 
 #### ConfigPreLoadEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.PRE_LOAD` listener.
+This event is received in any `CONFIG_EVENTS.PRE_LOAD` listener.
 
 - `getConfigPath(): string`: Returns the path of the configuration files folder
-- `getConfigs(): { fileName: string, validator: Function}[]`: Returns the list of configs (should be an empty array at this moment)
-- `setConfigPath(path: string): ConfigPreLoadEvent`: Allows to re-define the config files folder's path
-- `setConfigs(configs: { fileName: string, validator: Function}[]): ConfigPreLoadEvent`: Allows to re-define the configs list
+- `getConfigs(): { fileName: string, validator: Function}[]`: Returns the list of configs (usually empty at this point)
+- `setConfigPath(path: string): ConfigPreLoadEvent`: Redefines the config files folder path
+- `setConfigs(configs: { fileName: string, validator: Function}[]): ConfigPreLoadEvent`: Redefines the configs list
 
 #### ConfigLoadEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.LOAD` listener.
+This event is received in any `CONFIG_EVENTS.LOAD` listener.
 
 - `getConfigs(): { fileName: string, validator: Function}[]`: Returns the list of configs
-- `setConfigs(configs: { fileName: string, validator: Function}[]): ConfigLoadEvent`: Allows to re-define the configs list
-- `addConfig(configs: { fileName: string, validator: Function}): ConfigLoadEvent`: Allows to add a new config to the list
+- `setConfigs(configs: { fileName: string, validator: Function}[]): ConfigLoadEvent`: Redefines the configs list
+- `addConfig(configs: { fileName: string, validator: Function}): ConfigLoadEvent`: Adds a new config to the list
 
 #### ConfigPreFileLoadEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.PRE_FILE_LOAD` listener.
+This event is received in any `CONFIG_EVENTS.PRE_FILE_LOAD` listener.
 
 - `getConfigPath(): string`: Returns the path of the configuration files folder
 - `getFileName(): string`: Returns the name of the config about to be loaded
 - `getFilePath(): string`: Returns the path of the config file about to be loaded
-- `setFilePath(path: string): ConfigPreFileLoadEvent`: Allows to re-define the config's file path
+- `setFilePath(path: string): ConfigPreFileLoadEvent`: Redefines the config file path
 
 #### ConfigPreFileParseEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.PRE_FILE_PARSE` listener.
+This event is received in any `CONFIG_EVENTS.PRE_FILE_PARSE` listener.
 
 - `getFileName(): string`: Returns the name of the config about to be parsed
 - `getFilePath(): string`: Returns the path of the config file about to be parsed
 - `getContent(): string`: Returns the raw content of the config file about to be parsed
-- `setContent(content: string): ConfigPreFileParseEvent`: Allows to re-define the raw content of the config file about to be parsed
+- `setContent(content: string): ConfigPreFileParseEvent`: Redefines the raw content of the config file about to be parsed
 
 #### ConfigPostFileParseEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.POST_FILE_PARSE` listener.
+This event is received in any `CONFIG_EVENTS.POST_FILE_PARSE` listener.
 
 - `getFileName(): string`: Returns the name of the parsed config
 - `getFilePath(): string`: Returns the path of the parsed config file
 - `getConfig(): object`: Returns the parsed content of the config
-- `setConfig(config: object): ConfigPostFileParseEvent`: Allows to re-define the parsed content of the config
+- `setConfig(config: object): ConfigPostFileParseEvent`: Redefines the parsed content of the config
 
 #### ConfigPostEnvVariableInjectionEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.POST_ENV_VARIABLES_INJECTION` listener.
+This event is received in any `CONFIG_EVENTS.POST_ENV_VARIABLES_INJECTION` listener.
 
 - `getFileName(): string`: Returns the name of the config
 - `getFilePath(): string`: Returns the path of the config file
-- `getConfig(): object`: Returns the content of the config witch injected env variables
-- `setConfig(config: object): ConfigPostEnvVariableInjectionEvent`: Allows to re-define the content of the config
+- `getConfig(): object`: Returns the content of the config with injected environment variables
+- `setConfig(config: object): ConfigPostEnvVariableInjectionEvent`: Redefines the content of the config
 
 #### ConfigPostFileLoadEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.POST_FILE_LOAD` listener.
+This event is received in any `CONFIG_EVENTS.POST_FILE_LOAD` listener.
 
-- `getFileName(): string`: Returns the name of the config having been loaded
-- `getFilePath(): string`: Returns the path of the config file having been loaded
+- `getFileName(): string`: Returns the name of the config that was loaded
+- `getFilePath(): string`: Returns the path of the config file that was loaded
 
 #### ConfigPostLoadEvent
 
-This is the instance of the event object received in any `CONFIG_EVENTS.POST_LOAD` listener.
+This event is received in any `CONFIG_EVENTS.POST_LOAD` listener.
 
-- `getConfigs(): string`: Returns the name of the config having been loaded
+- `getConfigs(): string[]`: Returns the names of the configs that were loaded

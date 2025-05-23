@@ -1,7 +1,8 @@
 import { EventManager } from '../event-manager';
+import { describe, it, expect } from 'vitest';
 
-const createDummyListener = (name: string, delay: number) => async (list: string[]) => {
-  await new Promise((resolve) => {
+const createDummyListener = (name: string, delay: number) => async (list: string[]): Promise<void> => {
+  await new Promise<void>((resolve) => {
     setTimeout(resolve, delay);
   });
   list.push(name);
@@ -47,4 +48,4 @@ describe('lifecycle/event-manager', () => {
       });
     });
   });
-});
+}); 

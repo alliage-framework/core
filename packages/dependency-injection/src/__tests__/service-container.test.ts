@@ -10,12 +10,13 @@ import {
   UnhandledDependencyType,
 } from '../service-container';
 import { service, instanceOf, allInstancesOf, parameter, Dependency } from '../dependencies';
+import { describe, it, expect, vi } from 'vitest';
 
 describe('dependency-injection/service-container', () => {
   describe('ServiceContainer', () => {
-    const dummyServiceConstructorMock1 = jest.fn();
-    const dummyServiceConstructorMock2 = jest.fn();
-    const dummyServiceConstructorMock3 = jest.fn();
+    const dummyServiceConstructorMock1 = vi.fn();
+    const dummyServiceConstructorMock2 = vi.fn();
+    const dummyServiceConstructorMock3 = vi.fn();
     class DummyService3 {
       constructor() {
         dummyServiceConstructorMock3();
@@ -127,7 +128,7 @@ describe('dependency-injection/service-container', () => {
       sc.addService('dummy_service_3', ds3);
       sc.addService('dummy_service_c', dsc);
       sc.addService('dummy_service_cc', dscc);
-      sc.addService('dummy_service_2', new DummyService2(null as any));
+      sc.addService('dummy_service_2', new DummyService2(null));
 
       it('should return all the instances of a given constructor', () => {
         expect(sc.getAllInstancesOf(DummyService3)).toEqual([ds3, dsc, dscc]);
@@ -202,4 +203,4 @@ describe('dependency-injection/service-container', () => {
       });
     });
   });
-});
+}); 

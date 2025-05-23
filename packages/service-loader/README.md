@@ -1,13 +1,13 @@
 # Alliage Service Loader
 
-Automatic import and registration of services.
+Simplify your application architecture with automatic import and registration of services.
 
 ## Dependencies
 
-- [@alliage/di](../dependency-injection)
-- [@alliage/lifecycle](../lifecycle)
-- [@alliage/module-installer](../module-installer)
-- [@alliage/config-loader](../configuration-loader)
+- [@alliage/di](../dependency-injection) - Dependency injection system
+- [@alliage/lifecycle](../lifecycle) - Application lifecycle management 
+- [@alliage/module-installer](../module-installer) - Module installation utilities
+- [@alliage/config-loader](../configuration-loader) - Configuration management
 
 ## Installation
 
@@ -15,7 +15,7 @@ Automatic import and registration of services.
 yarn add @alliage/service-loader
 ```
 
-With npm
+Or with npm:
 
 ```bash
 npm install @alliage/service-loader
@@ -23,15 +23,15 @@ npm install @alliage/service-loader
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+If you've already installed [@alliage/module-installer](../module-installer), simply run:
 
 ```bash
 $(npm bin)/alliage-scripts install @alliage/service-loader
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+Otherwise, update your `alliage-modules.json` file by adding:
 
-```js
+```json
 {
   // ... other modules
   "@alliage/service-loader": {
@@ -49,11 +49,11 @@ Otherwise, update your `alliage-modules.json` file to add this at the bottom:
 
 ## Usage
 
-The goal of this module is to allow us to import and register services without having to create an alliage module.
+This module enables you to import and register services automatically without creating dedicated Alliage modules, streamlining your development process.
 
 ### Configuration
 
-Once installed, a new file located in `config/services.yaml` should be available that should look like this.
+Upon installation, a `config/services.yaml` file will be created with default settings:
 
 ```yaml
 basePath: 'src'
@@ -61,32 +61,34 @@ paths: ['services/**/*']
 exclude: ['services/**/NotAService.*']
 ```
 
-- The `basePath` parameters just tells the module where is located the source code of our application.
-- The `paths` parameters will define which files must be considered as services and thus must be automatically imported and registered.
-- The `exclude` parameter will allow to exclude files that could match one of the `paths`.
+- `basePath`: The root directory where your application source code resides
+- `paths`: Glob patterns that define which files should be treated as services for automatic import and registration
+- `exclude`: Glob patterns to exclude files that may match one of the `paths` patterns but should not be treated as services
 
-### Define a service
+### Defining a Service
 
-To define a service, the module must follow the following rules:
+To define a service, follow these rules:
 
-- Its path must match with what's configured in the `config/services.yaml` file
-- It must export the service as `default`
-- It must declare the service using the `Service` decorator
+1. The file path must match the patterns defined in `config/services.yaml`
+2. The service must be exported as the `default` export
+3. The service must be declared using the `Service` decorator
 
-Like in the following example:
+#### JavaScript Example (ES modules)
 
-```js
+```javascript
 import { Service } from '@alliage/service-loader';
 import { service, parameter } from '@alliage/di';
 
 class MyService {
   constructor(otherService, dummyParameter) {
-    super();
     this.otherService = otherService;
     this.dummyParameter = dummyParameter;
   }
 
-  // ...
+  performAction() {
+    // Service implementation
+    return `Using ${this.dummyParameter} with ${this.otherService.getName()}`;
+  }
 }
 
 export default Service('my_service', [
@@ -95,62 +97,95 @@ export default Service('my_service', [
 ])(MyService);
 ```
 
-The `Service` decorator takes following parameters:
+#### TypeScript Example (ES modules)
 
-- The service's name (which must be unique)
-- The list of dependencies
+```typescript
+import { Service } from '@alliage/service-loader';
+import { service, parameter, Dependency } from '@alliage/di';
 
-Once done, the service will be automatically loaded !
+interface OtherService {
+  getName(): string;
+}
+
+@Service('my_service', [
+  service('other_service'),
+  parameter('parameters.dummy_parameter'),
+])
+export default class MyService {
+  private otherService: OtherService;
+  private dummyParameter: string;
+
+  constructor(otherService: OtherService, dummyParameter: string) {
+    this.otherService = otherService;
+    this.dummyParameter = dummyParameter;
+  }
+
+  performAction(): string {
+    // Service implementation
+    return `Using ${this.dummyParameter} with ${this.otherService.getName()}`;
+  }
+}
+```
+
+The `Service` decorator accepts:
+- A unique service name (string)
+- An array of dependencies (optional)
+
+Once defined, your service will be automatically loaded and registered in the dependency injection container.
 
 ## Events
 
-### Service loader events
+The module provides several events that allow you to hook into the service loading process.
 
-```js
+### Service Loader Events
+
+```typescript
+// TypeScript
 import { SERVICE_LOADER_EVENTS } from '@alliage/service-loader';
 ```
 
-| Type                               | Event object                                                | Description                      |
-| ---------------------------------- | ----------------------------------------------------------- | -------------------------------- |
-| `SERVICE_LOADER_EVENTS.BEFORE_ALL` | [ServiceLoaderBeforeAllEvent](#serviceloaderbeforeallevent) | Before loading all services      |
-| `SERVICE_LOADER_EVENTS.BEFORE_ONE` | [ServiceLoaderBeforeOneEvent](#serviceloaderbeforeoneevent) | Before loading one service       |
-| `SERVICE_LOADER_EVENTS.AFTER_ONE`  | [ServiceLoaderAfterOneEvent](#serviceloaderafteroneevent)   | After having loaded on service   |
-| `SERVICE_LOADER_EVENTS.AFTER_ALL`  | [ServiceLoaderAfterAllEvent](#serviceloaderafterallevent)   | After having loaded all services |
+
+| Event Type | Event Object | Description |
+|------------|--------------|-------------|
+| `SERVICE_LOADER_EVENTS.BEFORE_ALL` | [ServiceLoaderBeforeAllEvent](#serviceloaderbeforeallevent) | Triggered before loading any services |
+| `SERVICE_LOADER_EVENTS.BEFORE_ONE` | [ServiceLoaderBeforeOneEvent](#serviceloaderbeforeoneevent) | Triggered before loading a specific service |
+| `SERVICE_LOADER_EVENTS.AFTER_ONE` | [ServiceLoaderAfterOneEvent](#serviceloaderafteroneevent) | Triggered after loading a specific service |
+| `SERVICE_LOADER_EVENTS.AFTER_ALL` | [ServiceLoaderAfterAllEvent](#serviceloaderafterallevent) | Triggered after loading all services |
 
 #### ServiceLoaderBeforeAllEvent
 
-This is the instance of the event object received in any `SERVICE_LOADER_EVENTS.BEFORE_ALL` listener.
+Available methods for this event, triggered by `SERVICE_LOADER_EVENTS.BEFORE_ALL`:
 
-- `getBasePath(): string`: Returns the base path as configured in the configuration file
-- `getPaths(): string[]`: Returns the paths as configured in the configuration file
-- `getExclude(): string[]`: Returns the exclusions as configured in the configuration file
-- `setPaths(paths: string[]): ServiceLoaderBeforeAllEvent`: Allows to re-define the paths
-- `setExclude(exclude: string[]): ServiceLoaderBeforeAllEvent`: Allows to re-define the exclusions
+- `getBasePath(): string` - Returns the base path configured in the configuration file
+- `getPaths(): string[]` - Returns the paths configured in the configuration file
+- `getExclude(): string[]` - Returns the exclusion patterns configured in the configuration file
+- `setPaths(paths: string[]): ServiceLoaderBeforeAllEvent` - Allows modifying the paths to be used
+- `setExclude(exclude: string[]): ServiceLoaderBeforeAllEvent` - Allows modifying the exclusion patterns
 
 #### ServiceLoaderBeforeOneEvent
 
-This is the instance of the event object received in any `SERVICE_LOADER_EVENTS.BEFORE_ONE` listener.
+Available methods for this event, triggered by `SERVICE_LOADER_EVENTS.BEFORE_ONE`:
 
-- `getModulePath(): string`: Returns the path of the service about to be loaded
-- `getName(): string`: Returns the unique name of the service about to be loaded
-- `getConstructor(): string`: Returns the constructor of the service about to be loaded
-- `getDependencies(): Dependency[]`: Returns the list of dependencies of the service about to be loaded
-- `setConstructor(constructor: any): ServiceLoaderBeforeOneEvent`: Allows to re-define the constructor of the service about to be loaded
-- `setDependencies(dependencies: Dependency[]): ServiceLoaderBeforeOneEvent`: Allows to re-define the dependencies of the service about to be loaded
+- `getModulePath(): string` - Returns the path of the service file being loaded
+- `getName(): string` - Returns the unique name of the service being loaded
+- `getConstructor(): any` - Returns the constructor function of the service being loaded
+- `getDependencies(): Dependency[]` - Returns the dependencies of the service being loaded
+- `setConstructor(constructor: any): ServiceLoaderBeforeOneEvent` - Allows modifying the constructor before registration
+- `setDependencies(dependencies: Dependency[]): ServiceLoaderBeforeOneEvent` - Allows modifying the dependencies before registration
 
 #### ServiceLoaderAfterOneEvent
 
-This is the instance of the event object received in any `SERVICE_LOADER_EVENTS.AFTER_ONE` listener.
+Available methods for this event, triggered by `SERVICE_LOADER_EVENTS.AFTER_ONE`:
 
-- `getModulePath(): string`: Returns the path of the loaded service
-- `getName(): string`: Returns the unique name of the loaded service
-- `getConstructor(): string`: Returns the constructor of the loaded service
-- `getDependencies(): Dependency[]`: Returns the list of dependencies of the loaded service
+- `getModulePath(): string` - Returns the path of the loaded service file
+- `getName(): string` - Returns the unique name of the loaded service
+- `getConstructor(): any` - Returns the constructor function of the loaded service
+- `getDependencies(): Dependency[]` - Returns the dependencies of the loaded service
 
 #### ServiceLoaderAfterAllEvent
 
-This is the instance of the event object received in any `SERVICE_LOADER_EVENTS.AFTER_ALL` listener.
+Available methods for this event, triggered by `SERVICE_LOADER_EVENTS.AFTER_ALL`:
 
-- `getBasePath(): string`: Returns the base path as configured in the configuration file
-- `getPaths(): string[]`: Returns the paths as configured in the configuration file
-- `getExclude(): string[]`: Returns the exclusions as configured in the configuration file
+- `getBasePath(): string` - Returns the base path that was used
+- `getPaths(): string[]` - Returns the paths that were used
+- `getExclude(): string[]` - Returns the exclusion patterns that were used

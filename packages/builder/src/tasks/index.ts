@@ -1,2 +1,2 @@
-export * from './shell-task';
-export * from './abstract-task';
+export * from './shell-task/index.js';
+export * from './abstract-task/index.js';

@@ -1,6 +1,6 @@
 # Alliage Process Manager
 
-This modules allows to define processes that can be executed through the alliage's run script.
+This module allows you to define executable processes through Alliage's run script, serving as entry points to your application.
 
 ## Dependencies
 
@@ -15,7 +15,7 @@ This modules allows to define processes that can be executed through the alliage
 yarn add @alliage/process-manager
 ```
 
-With npm
+Or with npm:
 
 ```bash
 npm install @alliage/process-manager
@@ -23,15 +23,15 @@ npm install @alliage/process-manager
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+If you have already installed [@alliage/module-installer](../module-installer), simply run:
 
 ```bash
-$(npm bin)/alliage-scripts install @alliage/process-manager
+npx alliage-scripts install @alliage/process-manager
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+Otherwise, update your `alliage-modules.json` file by adding:
 
-```js
+```json
 {
   // ... other modules
   "@alliage/process-manager": {
@@ -42,21 +42,23 @@ Otherwise, update your `alliage-modules.json` file to add this at the bottom:
       "@alliage/service-loader",
       "@alliage/config-loader"
     ],
-    "envs": [],
+    "envs": []
   }
 }
 ```
 
 ## Usage
 
-### Define a process
+### Defining a Process
 
-Processes are the entry points of the application.
-They will usually hold (directly or not) the business logic of our project.
+Processes serve as entry points to your application and typically contain your application's business logic, either directly or indirectly.
 
-To define a process, it's pretty simple, we'll just have to implement a class extending the `AbstractProcess` class and to register it as a service.
+Creating a process is straightforward - implement a class that extends `AbstractProcess` and register it as a service.
+
+#### JavaScript Example
 
 ```js
+// my-process.js
 import { AbstractProcess } from '@alliage/process-manager';
 import { Service } from '@alliage/service-loader';
 
@@ -66,10 +68,9 @@ class MyProcess extends AbstractProcess {
   }
 
   async execute(args, env) {
-    process.stdout.write(`Hello world !`);
+    process.stdout.write('Hello world!');
 
-    // Returning "true" means that the process ran successfully
-    // Returning "false" means that process didn't run successfully
+    // Return true for successful execution, false for failure
     return true;
   }
 }
@@ -77,35 +78,58 @@ class MyProcess extends AbstractProcess {
 export default Service('my_process')(MyProcess);
 ```
 
-A process class must implement the following method:
+#### TypeScript Example
 
-- `getName()`: Returns the process name. Must be unique among all processes.
-- `execute(args: Arguments, env: string): boolean | Promise<boolean>`: Contains the business logic of the process. It take the following parameters:
-  - `args`: The [arguments](https://github.com/alliage-framework/framework#the-argument-class) passed to the alliage's run script
+```ts
+// my-process.ts
+import { AbstractProcess } from '@alliage/process-manager';
+import { Service } from '@alliage/service-loader';
+import { Arguments } from '@alliage/framework';
+
+@Service('my_process')
+export default class MyProcess extends AbstractProcess {
+  getName() {
+    return 'my-process';
+  }
+
+  async execute(args: Arguments, env: string) {
+    process.stdout.write('Hello world!');
+
+    // Return true for successful execution, false for failure
+    return true;
+  }
+}
+```
+
+A process class must implement these methods:
+
+- `getName()`: Returns a unique identifier for the process
+- `execute(args, env)`: Contains the business logic and returns a boolean or Promise<boolean> indicating success or failure
+  - `args`: Arguments passed to the Alliage run script
   - `env`: The execution environment
 
-### Run a process
+### Running a Process
 
-Once our process is created we can run it simply by running the following command:
-
-```bash
-$(npm bin)/alliage-scripts run my-process
-```
-
-In this example, `my-process` is actually the name of the process as defined in the `getName` method.
-
-And then, we should have the following output:
+Once your process is created, run it with:
 
 ```bash
-Hello world !
+npx alliage-scripts run my-process
 ```
 
-### Configure the arguments
+Where `my-process` is the name defined in your `getName` method. The output will be:
 
-If we want our process to depend on user input we can make it accept specific arguments.
-To do so, we have to implement the `configure` method as in the following example.
+```
+Hello world!
+```
+
+### Configuring Arguments
+
+You can make your process accept specific arguments by implementing the `configure` method.
+
+#### JavaScript Example
 
 ```js
+// my-process.js
 import { AbstractProcess } from '@alliage/process-manager';
 import { Service } from '@alliage/service-loader';
 
@@ -115,7 +139,7 @@ class MyProcess extends AbstractProcess {
   }
 
   configure(builder) {
-    // We expect one argument called "name"
+    // Define an argument named "name"
     builder.addArgument('name', {
       type: 'string',
       describe: 'Your name',
@@ -123,8 +147,8 @@ class MyProcess extends AbstractProcess {
   }
 
   async execute(args, env) {
-    // We use the "name" argument in the output
-    process.stdout.write(`Hello ${args.get('name')} !`);
+    // Use the "name" argument in the output
+    process.stdout.write(`Hello ${args.get('name')}!`);
 
     return true;
   }
@@ -133,47 +157,158 @@ class MyProcess extends AbstractProcess {
 export default Service('my_process')(MyProcess);
 ```
 
-The `configure` method will receive an instance of [`CommandBuilder`](https://github.com/alliage-framework/framework#configure-the-command) allowing us to define what arguments or options we expect.
+#### TypeScript Example
 
-Now we can run this process like this:
+```ts
+// my-process.ts
+import { AbstractProcess } from '@alliage/process-manager';
+import { Service } from '@alliage/service-loader';
+import { Arguments, CommandBuilder } from '@alliage/framework';
 
-```bash
-$(npm bin)/alliage-scripts run my-process Bruce
+@Service('my_process')
+export default class MyProcess extends AbstractProcess {
+  getName() {
+    return 'my-process';
+  }
+
+  configure(builder: CommandBuilder): void {
+    // Define an argument named "name"
+    builder.addArgument('name', {
+      type: 'string',
+      describe: 'Your name',
+    });
+  }
+
+  async execute(args: Arguments, env: string) {
+    // Use the "name" argument in the output
+    process.stdout.write(`Hello ${args.get('name')}!`);
+
+    return true;
+  }
+}
 ```
 
-And we should get the following output:
+The `configure` method receives a `CommandBuilder` instance that allows you to define expected arguments or options.
+
+Now you can run this process with:
 
 ```bash
-Hello Bruce !
+npx alliage-scripts run my-process Bruce
 ```
 
-### Handle process termination
+And get the output:
 
-A process can stop for many reasons. The first and most obvious one is when it has finished the job it was made for.
-That's the most optimistic scenario.
+```
+Hello Bruce!
+```
 
-But it can also stop when we don't necessarily want it to for many other reasons such as:
+### Handling Process Termination
 
-- The system or the user killing the process
-- Unhandled errors at a deeper level of the call stack
-- And so on...
+Processes can stop for various reasons, including:
+- Completing their intended task
+- Being killed by the system or user
+- Encountering unhandled errors
+- And more
 
-Hopefully, this module takes care of these edge cases and will let us do stuff right before the process shuts down.
+This module handles these edge cases and lets you perform cleanup operations before shutdown by implementing the `terminate` method.
 
-All we need to do is to implement the `terminate(args: Arguments, env: string, signal: SIGNAL, payload: SignalPayload): void | Promise<void>` method.
-
-This method will be called whether the process stopped naturally or not and receive the following parameters:
-
-- `args`: The [arguments](https://github.com/alliage-framework/framework#the-argument-class) passed to the alliage's run script
-- `env`: The execution environment
-- `signal`: The reason why the process stops
-- `payload`: Additional information bringing more context to the reason of the shutdown.
-
-#### Signal
-
-The signal sent to the `terminate` method can have the following values:
+#### JavaScript Example
 
 ```js
+// my-process.js
+import { AbstractProcess } from '@alliage/process-manager';
+import { Service } from '@alliage/service-loader';
+import { service } from '@alliage/di';
+
+class MyProcess extends AbstractProcess {
+  constructor(database) {
+    super();
+    this.database = database;
+  }
+
+  getName() {
+    return 'my-process';
+  }
+
+  async execute(args, env) {
+    // Open a database connection
+    await this.database.connect();
+
+    // Do stuff...
+
+    return true;
+  }
+
+  async terminate(args, env, signal, payload) {
+    // Close the connection when the process stops
+    await this.database.disconnect();
+  }
+}
+
+export default Service('my_process', [
+  // Dependency injection for database service
+  service('database'),
+])(MyProcess);
+```
+
+#### TypeScript Example
+
+```ts
+// my-process.ts
+import { AbstractProcess, SIGNAL, SignalPayload } from '@alliage/process-manager';
+import { Service } from '@alliage/service-loader';
+import { service } from '@alliage/di';
+import { Arguments } from '@alliage/framework';
+import { Database } from './types';
+
+@Service('my_process', [
+  // Dependency injection for database service
+  service('database'),
+])
+export default class MyProcess extends AbstractProcess {
+  private database: Database;
+
+  constructor(database: Database) {
+    super();
+    this.database = database;
+  }
+
+  getName() {
+    return 'my-process';
+  }
+
+  async execute(args: Arguments, env: string) {
+    // Open a database connection
+    await this.database.connect();
+
+    // Do stuff...
+
+    return true;
+  }
+
+  async terminate(
+    args: Arguments,
+    env: string,
+    signal: SIGNAL,
+    payload: SignalPayload
+  ): Promise<void> {
+    // Close the connection when the process stops
+    await this.database.disconnect();
+  }
+}
+```
+
+The `terminate` method is called whether the process stopped naturally or not and receives:
+- `args`: Arguments passed to the Alliage run script
+- `env`: The execution environment
+- `signal`: The reason for shutdown
+- `payload`: Additional contextual information about the shutdown
+
+#### Signal Types
+
+The signal sent to the `terminate` method can have these values:
+
+```ts
 import { SIGNAL } from '@alliage/process-manager';
 
 // When the process received a SIGTERM signal
@@ -195,91 +330,44 @@ SIGNAL.SUCCESS_SHUTDOWN;
 SIGNAL.FAILURE_SHUTDOWN;
 ```
 
-#### Signal payload
+#### Signal Payload
 
-According to the signal, the signal payload will contain different information.
+The payload varies depending on the signal:
 
-In case of `UNCAUGHT_EXCEPTION` it will have the following shape:
-
-```js
+For `UNCAUGHT_EXCEPTION`:
+```ts
 {
   error: Error; // The thrown exception
 }
 ```
 
-In case of `UNHANDLED_REJECTION` it will have the following shape:
-
-```js
+For `UNHANDLED_REJECTION`:
+```ts
 {
-  reason: {} | null, // The rejection's value
-  promise: Promise<any> // The rejected promise
+  reason: unknown; // The rejection value
+  promise: Promise<unknown>; // The rejected promise
 }
 ```
 
-And for any other signal, the payload will be empty.
+For other signals, the payload will be empty.
 
-#### Use case
+### Hanging a Process
 
-Usually, the terminate method will be used to close resources that we could have opened at the beginning of the execution. Like in the following example:
+By default, a process stops once the `execute` function completes. However, this behavior isn't ideal for long-running processes like web servers.
 
-```js
-import { AbstractProcess } from '@alliage/process-manager';
-import { Service } from '@alliage/service-loader';
-import { service } from '@alliage/di';
+For such cases, use the `waitToBeShutdown` method to keep the process running until explicitly stopped.
 
-class MyProcess extends AbstractProcess {
-  construct(database) {
-    this.database = database;
-  }
-
-  getName() {
-    return 'my-process';
-  }
-
-  async execute(args, env) {
-    // We open a connection to the DB
-    await this.database.connect();
-
-    // Do stuff...
-
-    return true;
-  }
-
-  async terminate() {
-    // When the process stops, we close the connection
-    await this.database.disconnect();
-  }
-}
-
-export default Service('my_process', [
-  // Dummy service representing an abstraction layer of the DB
-  service('database'),
-])(MyProcess);
-```
-
-### Hang a process
-
-To avoid us having to deal with the weirdness of the NodeJS event loop a process will systematically stops once the `execute` function code has done being processed.
-
-But this can be problematic in some cases when we execute code that does things in the background like, for example, running an express server.
-
-For this specific use case, we can use the `waitToBeShutdown` method. This method will allow the process to hang until it gets shutdown naturally (with the help of the `shutdown` method) or not.
-
-Example just below:
+#### JavaScript Example
 
 ```js
+// server-process.js
 import express from 'express';
-
 import { AbstractProcess } from '@alliage/process-manager';
 import { Service } from '@alliage/service-loader';
 
-class MyProcess extends AbstractProcess {
-  construct(database) {
-    this.database = database;
-  }
-
+class ServerProcess extends AbstractProcess {
   getName() {
-    return 'my-process';
+    return 'server';
   }
 
   async execute(args, env) {
@@ -289,79 +377,126 @@ class MyProcess extends AbstractProcess {
       res.send('Hello World!');
     });
 
-    // This endpoint will allow us to stop the server
+    // Endpoint to stop the server
     app.get('/shutdown', (req, res) => {
+      res.send('Shutting down...');
       // This stops the process
-      this.shutdown();
+      this.shutdown(true);
     });
 
-    app.listen(8080);
+    app.listen(8080, () => {
+      console.log('Server running on port 8080');
+    });
 
-    // This allows the process to hang until it gets shut down
+    // This keeps the process running until shutdown is called
     return await this.waitToBeShutdown();
   }
 }
 
-export default Service('my_process')(MyProcess);
+export default Service('server_process')(ServerProcess);
+```
+
+#### TypeScript Example
+
+```ts
+// server-process.ts
+import express from 'express';
+import { AbstractProcess } from '@alliage/process-manager';
+import { Service } from '@alliage/service-loader';
+import { Arguments } from '@alliage/framework';
+
+@Service('server_process')
+export default class ServerProcess extends AbstractProcess {
+  getName(): string {
+    return 'server';
+  }
+
+  async execute(args: Arguments, env: string): Promise<boolean> {
+    const app = express();
+
+    app.get('/', (req, res) => {
+      res.send('Hello World!');
+    });
+
+    // Endpoint to stop the server
+    app.get('/shutdown', (req, res) => {
+      res.send('Shutting down...');
+      // This stops the process
+      this.shutdown(true);
+    });
+
+    app.listen(8080, () => {
+      console.log('Server running on port 8080');
+    });
+
+    // This keeps the process running until shutdown is called
+    return await this.waitToBeShutdown();
+  }
+}
 ```
 
 ## Events
 
-### Process events
+### Process Events
 
 ```js
 import { PROCESS_EVENTS } from '@alliage/process-manager';
 ```
 
-| Type                            | Event object                              | Description                                             |
-| ------------------------------- | ----------------------------------------- | ------------------------------------------------------- |
-| `PROCESS_EVENTS.PRE_CONFIGURE`  | [PreConfigureEvent](#preconfigureevent)   | Before calling the `configure` method of a process      |
-| `PROCESS_EVENTS.POST_CONFIGURE` | [PostConfigureEvent](#postconfigureevent) | After having called the `configure` method of a process |
-| `PROCESS_EVENTS.PRE_EXECUTE`    | [PreExecuteEvent](#preexecuteevent)       | Before executing a process                              |
-| `PROCESS_EVENTS.PRE_TERMINATE`  | [PreTerminateEvent](#preterminateevent)   | Before shutting down a process                          |
-| `PROCESS_EVENTS.POST_TERMINATE` | [PostTerminateEvent](#postterminateevent) | After having shut down a process                        |
+| Type                            | Event object                              | Description                                         |
+| ------------------------------- | ----------------------------------------- | --------------------------------------------------- |
+| `PROCESS_EVENTS.PRE_CONFIGURE`  | [PreConfigureEvent](#preconfigureevent)   | Before calling the `configure` method of a process  |
+| `PROCESS_EVENTS.POST_CONFIGURE` | [PostConfigureEvent](#postconfigureevent) | After calling the `configure` method of a process   |
+| `PROCESS_EVENTS.PRE_EXECUTE`    | [PreExecuteEvent](#preexecuteevent)       | Before executing a process                          |
+| `PROCESS_EVENTS.PRE_TERMINATE`  | [PreTerminateEvent](#preterminateevent)   | Before shutting down a process                      |
+| `PROCESS_EVENTS.POST_TERMINATE` | [PostTerminateEvent](#postterminateevent) | After shutting down a process                       |
 
 #### PreConfigureEvent
 
-This is the instance of the event object received in any `PROCESS_EVENTS.PRE_CONFIGURE` listener.
+This event is dispatched before a process is configured.
 
+Methods:
 - `getProcess(): AbstractProcess`: Returns the process about to be configured
 - `getConfig(): CommandBuilder`: Returns the command builder about to be sent to the process
 - `getEnv(): string`: Returns the execution environment
 
 #### PostConfigureEvent
 
-This is the instance of the event object received in any `PROCESS_EVENTS.POST_CONFIGURE` listener.
+This event is dispatched after a process has been configured.
 
-- `getProcess(): AbstractProcess`: Returns the process about that has been configured
-- `getConfig(): CommandBuilder`: Returns the command builder that has been sent to the process
+Methods:
+- `getProcess(): AbstractProcess`: Returns the configured process
+- `getConfig(): CommandBuilder`: Returns the command builder that was sent to the process
 - `getEnv(): string`: Returns the execution environment
 
 #### PreExecuteEvent
 
-This is the instance of the event object received in any `PROCESS_EVENTS.PRE_EXECUTE` listener.
+This event is dispatched before a process is executed.
 
-- `getProcess(): AbstractProcess`: Returns the process about that has been configured
+Methods:
+- `getProcess(): AbstractProcess`: Returns the configured process
 - `getArgs(): Arguments`: Returns the arguments about to be sent to the process
 - `getEnv(): string`: Returns the execution environment
-- `setProcess(process: AbstractProcess): PreExecuteEvent`: Allows to re-define the process about to be executed
+- `setProcess(process: AbstractProcess): PreExecuteEvent`: Allows redefining the process about to be executed
 
 #### PreTerminateEvent
 
-This is the instance of the event object received in any `PROCESS_EVENTS.PRE_TERMINATE` listener.
+This event is dispatched before a process is terminated.
 
-- `getProcess(): AbstractProcess`: Returns the process about that has been configured
-- `getArgs(): Arguments`: Returns the arguments about to be sent to the process
-- `getSignal(): Signal`: Returns [signal](#signal) sent to the process
-- `getSignalPayload(): SignalPayload`: Returns [signal payload](#signal-payload) sent to the process
+Methods:
+- `getProcess(): AbstractProcess`: Returns the configured process
+- `getArgs(): Arguments`: Returns the arguments sent to the process
+- `getSignal(): Signal`: Returns the signal sent to the process
+- `getSignalPayload(): SignalPayload`: Returns the signal payload sent to the process
 - `getEnv(): string`: Returns the execution environment
 
 #### PostTerminateEvent
 
-This is the instance of the event object received in any `PROCESS_EVENTS.POST_TERMINATE` listener.
+This event is dispatched after a process has been terminated.
 
-- `getProcess(): AbstractProcess`: Returns the process about that has been configured
-- `getArgs(): Arguments`: Returns the arguments about to be sent to the process
-- `getSignal(): Signal`: Returns [signal](#signal) sent to the process
-- `getSignalPayload(): SignalPayload`: Returns [signal payload](#signal-payload) sent to the process
+Methods:
+- `getProcess(): AbstractProcess`: Returns the configured process
+- `getArgs(): Arguments`: Returns the arguments sent to the process
+- `getSignal(): Signal`: Returns the signal sent to the process
+- `getSignalPayload(): SignalPayload`: Returns the signal payload sent to the process
 - `getEnv(): string`: Returns the execution environment

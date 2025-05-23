@@ -2,6 +2,7 @@ import { Arguments } from '@alliage/framework';
 import { ServiceContainer, service } from '@alliage/di';
 import { BUILD_EVENTS, LifeCycleBuildEvent, EventManager } from '@alliage/lifecycle';
 import { validators, loadConfig, CONFIG_EVENTS } from '@alliage/config-loader';
+import { describe, it, expect, afterEach, vi, MockInstance } from 'vitest';
 
 import { CONFIG_NAME, schema } from '../config';
 import { TASK_NAME, ShellTask } from '../tasks/shell-task';
@@ -14,8 +15,9 @@ import {
   BuilderAfterAllTasksEvent,
 } from '../event';
 import BuilderModule from '..';
+import { JSONSchema } from 'json-schema-to-ts';
 
-jest.mock('@alliage/config-loader');
+vi.mock('@alliage/config-loader');
 
 describe('builder', () => {
   describe('BuilderModule', () => {
@@ -25,8 +27,8 @@ describe('builder', () => {
       it('should listen to CONFIG_EVENTS.LOAD and BUILD_EVENTS.BUILD events', () => {
         const validateMockReturnValue = () => {};
         const loadConfigMockReturnValue = () => {};
-        (validators.jsonSchema as jest.Mock).mockReturnValueOnce(validateMockReturnValue);
-        (loadConfig as jest.Mock).mockReturnValueOnce(loadConfigMockReturnValue);
+        (validators.jsonSchema as unknown as MockInstance).mockReturnValueOnce(validateMockReturnValue);
+        (loadConfig as unknown as MockInstance).mockReturnValueOnce(loadConfigMockReturnValue);
 
         expect(module.getEventHandlers()).toEqual({
           [CONFIG_EVENTS.LOAD]: loadConfigMockReturnValue,
@@ -40,13 +42,15 @@ describe('builder', () => {
 
     describe('#registerServices', () => {
       const serviceContainer = new ServiceContainer();
-      const registerServiceSpy = jest.spyOn(serviceContainer, 'registerService');
+      const registerServiceSpy = vi.spyOn(serviceContainer, 'registerService');
 
       module.registerServices(serviceContainer);
 
-      expect(registerServiceSpy).toHaveBeenCalledWith(TASK_NAME, ShellTask, [
-        service('event_manager'),
-      ]);
+      it('should register the shell task', () => {
+        expect(registerServiceSpy).toHaveBeenCalledWith(TASK_NAME, ShellTask, [
+          service('event_manager'),
+        ]);
+      });
     });
 
     describe('#handlerBuild', () => {
@@ -63,7 +67,7 @@ describe('builder', () => {
                 type: 'string',
               },
             },
-          };
+          } satisfies JSONSchema;
         }
 
         run() {}
@@ -85,12 +89,12 @@ describe('builder', () => {
         ],
       });
 
-      const dummyTaskRunSpy = jest.spyOn(DummyTask.prototype, 'run');
+      const dummyTaskRunSpy = vi.spyOn(DummyTask.prototype, 'run');
 
-      const beforeAllTasksHandler = jest.fn();
-      const afterAllTasksHandler = jest.fn();
-      const beforeTaskHandler = jest.fn();
-      const afterTaskHandler = jest.fn();
+      const beforeAllTasksHandler = vi.fn();
+      const afterAllTasksHandler = vi.fn();
+      const beforeTaskHandler = vi.fn();
+      const afterTaskHandler = vi.fn();
 
       eventManager.on(BUILDER_EVENTS.BEFORE_ALL_TASKS, beforeAllTasksHandler);
       eventManager.on(BUILDER_EVENTS.AFTER_ALL_TASKS, afterAllTasksHandler);
@@ -104,7 +108,7 @@ describe('builder', () => {
       });
 
       afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
       });
 
       it('should run all the tasks specified in the configuration', async () => {
@@ -216,13 +220,13 @@ describe('builder', () => {
       });
 
       it('should raise an error if the params schema is invalid', async () => {
-        const getParamsSchemaSpy = jest
+        const getParamsSchemaSpy = vi
           .spyOn(DummyTask.prototype, 'getParamsSchema')
           .mockReturnValueOnce({
             type: 'object',
             properties: {
               test: {
-                type: 'number',
+                type: 'number' as 'string',
               },
             },
           });
@@ -294,4 +298,4 @@ describe('builder', () => {
       });
     });
   });
-});
+}); 

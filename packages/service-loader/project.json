@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/service-loader",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

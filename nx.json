@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "tui": {
+    "autoExit": true
+  },
+  "targetDefaults": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh $NX_WORKSPACE_ROOT/scripts/build.sh",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rm -rf dist"
+      }
+    },
+    "update-manifest": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh $NX_WORKSPACE_ROOT/scripts/update-manifest.sh",
+        "cwd": "{projectRoot}"
+      }
+    }
+  },
+  "release": {
+    "projects": ["packages/*"],
+    "releaseTagPattern": "{version}",
+    "changelog": {
+      "projectChangelogs": true,
+      "writeChangelog": true,
+      "automaticFromRef": true,
+      "workspaceChangelog": {
+        "createRelease": "github"
+      }
+    },
+    "git": {
+      "commitMessageFormat": "chore(release): publish v{version}",
+      "tagName": "{version}"
+    },
+    "projectsRelationship": "fixed",
+    "version": {
+      "conventionalCommits": true,
+      "versionPrefix": "",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Arguments, INITIALIZATION_CONTEXT } from '@alliage/framework';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import { EventManager, INIT_EVENTS, LifeCycleInitEvent } from '@alliage/lifecycle';
 import { ServiceContainer } from '@alliage/di';
@@ -24,7 +25,7 @@ describe('events-listener-loader', () => {
 
       serviceContainer.addService('event_manager', eventManager);
 
-      const onMock = jest.spyOn(eventManager, 'on');
+      const onMock = vi.spyOn(eventManager, 'on');
 
       afterEach(() => {
         onMock.mockReset();
@@ -99,4 +100,4 @@ describe('events-listener-loader', () => {
       });
     });
   });
-});
+}); 

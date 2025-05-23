@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { Arguments, PrimitiveContainer } from '@alliage/framework';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 import ErrorHandlerModule from '..';
 
 describe('error-handler', () => {
@@ -21,7 +22,7 @@ describe('error-handler', () => {
         public additionalProperty2 = { foo: 'bar' };
       }
 
-      let consoleErrorMock: jest.SpyInstance;
+      let consoleErrorMock: MockInstance;
 
       beforeAll(async () => {
         await module.handleInit(
@@ -32,7 +33,7 @@ describe('error-handler', () => {
       });
 
       beforeEach(() => {
-        consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+        consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
       });
 
       afterEach(() => {
@@ -106,10 +107,11 @@ describe('error-handler', () => {
       });
 
       it('should display a generic name if the Error has no constructor', () => {
-        const UnknownError = function(this: any, message: string) {
+        const UnknownError = function(this: unknown, message: string) {
           return Error.call(this, message);
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const error = new (UnknownError as any)('this error has no name');
         error.constructor = undefined;
 
@@ -122,10 +124,11 @@ describe('error-handler', () => {
       });
 
       it('should display a generic name if the Error has no name', () => {
-        const UnknownError = function(this: any, message: string) {
+        const UnknownError = function(this: unknown, message: string) {
           return Error.call(this, message);
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const error = new (UnknownError as any)('this error has no name');
 
         process.emit('uncaughtException', error);
@@ -146,7 +149,7 @@ describe('error-handler', () => {
       });
 
       it('should not listen to errors if the script is a subscript', async () => {
-        const onMock = jest.spyOn(process, 'on');
+        const onMock = vi.spyOn(process, 'on');
         const moduleInSubscript = new ErrorHandlerModule();
 
         await moduleInSubscript.handleInit(
@@ -161,4 +164,4 @@ describe('error-handler', () => {
       });
     });
   });
-});
+}); 

@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/parameters-loader",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/process-manager",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

@@ -1,4 +1,5 @@
 import { ConfigurationSchemaValidationError } from '..';
+import { describe, it, expect } from 'vitest';
 
 describe('configuration-loader/validators', () => {
   describe('ConfigurationSchemaValidationError', () => {
@@ -18,4 +19,4 @@ describe('configuration-loader/validators', () => {
       expect(error.errors).toEqual([{ property: 'foo', message: 'bar' }]);
     });
   });
-});
+}); 

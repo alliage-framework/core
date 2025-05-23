@@ -1,9 +1,13 @@
-import fs from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
 import { createHash } from 'crypto';
 import { Sandbox } from '@alliage/sandbox';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const HASH = createHash('md5')
-  .update(require('../../lerna.json').version)
+  .update(
+    JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../packages/lifecycle/package.json')).toString()).version,
+  )
   .digest('hex');
 
 describe('Main scenario', () => {
@@ -20,9 +24,21 @@ describe('Main scenario', () => {
   });
 
   it('should install correctly all the modules by updating the alliage-modules.json and copying the configuration files', async () => {
-    const { waitCompletion } = sandbox.install(['@alliage/core', '--env=development']);
+    const modules = [
+      '@alliage/process-manager',
+      '@alliage/builder',
+      '@alliage/parameters-loader',
+      '@alliage/events-listener-loader',
+      '@alliage/error-handler',
+    ];
 
-    await waitCompletion();
+    for (const module of modules) {
+      const { waitCompletion, process: childProcess } = sandbox.install([module, '--env=development']);
+
+      childProcess.stderr.pipe(process.stderr);
+      childProcess.stdout.pipe(process.stdout);
+      await waitCompletion();
+    }
 
     const builderConfigFile = `${sandbox.getPath()}/config/builder.yaml`;
     expect(fs.existsSync(builderConfigFile)).toBe(true);
@@ -122,7 +138,7 @@ describe('Main scenario', () => {
     const { waitCompletion, process: childProcess } = sandbox.run(['dummy-process', 'test']);
 
     let output = '';
-    childProcess.stdout!.on('data', (chunk) => {
+    childProcess.stdout.on('data', (chunk) => {
       output += chunk;
     });
     await waitCompletion();
@@ -135,7 +151,7 @@ describe('Main scenario', () => {
     const { waitCompletion, process: childProcess } = sandbox.run(['error-process']);
 
     let output = '';
-    childProcess.stderr!.on('data', (chunk) => {
+    childProcess.stderr.on('data', (chunk) => {
       output += chunk;
     });
     await waitCompletion();
@@ -161,7 +177,7 @@ tasks:
     const { waitCompletion, process: childProcess } = sandbox.build(['--env=development']);
 
     let output = '';
-    childProcess.stdout!.on('data', (chunk) => {
+    childProcess.stdout.on('data', (chunk) => {
       output += chunk;
     });
     await waitCompletion();

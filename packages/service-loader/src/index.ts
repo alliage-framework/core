@@ -1,5 +1,5 @@
 import path from 'path';
-import glob from 'glob';
+import { glob } from 'glob';
 
 import { Dependency } from '@alliage/di';
 import {
@@ -10,14 +10,14 @@ import {
 } from '@alliage/lifecycle';
 import { CONFIG_EVENTS, loadConfig, validators } from '@alliage/config-loader';
 
-import { CONFIG_NAME, schema, Config } from './config';
-import { extractServiceDefinition } from './decorators/extractors';
+import { CONFIG_NAME, schema, Config } from './config.js';
+import { extractServiceDefinition } from './decorators/extractors/index.js';
 import {
   ServiceLoaderBeforeAllEvent,
   ServiceLoaderAfterAllEvent,
   ServiceLoaderBeforeOneEvent,
   ServiceLoaderAfterOneEvent,
-} from './events';
+} from './events.js';
 
 export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
@@ -47,51 +47,37 @@ export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
 
     await Promise.all(
       paths.map(async (pattern) => {
-        const files: string[] = await new Promise((resolve, reject) => {
-          glob(
-            pattern,
-            {
-              cwd: path.resolve(basePath),
-              absolute: true,
-              nodir: true,
-              ignore: exclude,
-            },
-            (err, matches) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(matches);
-            },
-          );
+        const files = await glob(pattern, {
+          cwd: path.resolve(basePath),
+          absolute: true,
+          nodir: true,
+          ignore: exclude as string[],
         });
         await Promise.all(
           files.map(async (file) => {
-            // eslint-disable-next-line import/no-dynamic-require, global-require
-            const module = require(file);
-            const service = (module && module.default) || module;
-            if (service) {
-              const definition = extractServiceDefinition(service);
-              if (definition) {
-                const beforeOneEvent = new ServiceLoaderBeforeOneEvent(
-                  file,
-                  definition.name,
-                  service,
-                  definition.dependencies,
-                );
-                await eventManager.emit(beforeOneEvent.getType(), beforeOneEvent);
-
-                const name = beforeOneEvent.getName();
-                const ctor = beforeOneEvent.getConstructor();
-                const deps = beforeOneEvent.getDependencies();
-
-                serviceContainer.registerService(name, ctor, deps as Dependency[]);
-
-                await eventManager.emit(
-                  ...ServiceLoaderAfterOneEvent.getParams(file, name, ctor, deps),
-                );
-              }
+            const module = await import(file);
+            const service = module.default ?? module;
+            const definition = extractServiceDefinition(service);
+            if (!definition) {
+              return;
             }
+            const beforeOneEvent = new ServiceLoaderBeforeOneEvent(
+              file,
+              definition.name,
+              service,
+              definition.dependencies,
+            );
+            await eventManager.emit(beforeOneEvent.getType(), beforeOneEvent);
+
+            const name = beforeOneEvent.getName();
+            const ctor = beforeOneEvent.getConstructor();
+            const deps = beforeOneEvent.getDependencies();
+
+            serviceContainer.registerService(name, ctor, deps as Dependency[]);
+
+            await eventManager.emit(
+              ...ServiceLoaderAfterOneEvent.getParams(file, name, ctor, deps),
+            );
           }),
         );
       }),
@@ -101,6 +87,6 @@ export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
   };
 }
 
-export * from './config';
-export * from './events';
-export * from './decorators';
+export * from './config.js';
+export * from './events.js';
+export * from './decorators/index.js';

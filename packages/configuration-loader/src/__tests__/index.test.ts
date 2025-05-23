@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 
 import { EventManager, INIT_EVENTS, LifeCycleInitEvent } from '@alliage/lifecycle';
 import { ServiceContainer } from '@alliage/di';
@@ -46,10 +47,10 @@ describe('configuration-loader', () => {
 
     serviceContainer.addService('event_manager', eventManager);
 
-    const fakeValidator = (_configPath: string, config: any) => config;
+    const fakeValidator = (_configPath: string, config: unknown) => config;
     eventManager.on(CONFIG_EVENTS.LOAD, loadConfig('fileName', fakeValidator));
 
-    const emitMock = jest.spyOn(eventManager, 'emit');
+    const emitMock = vi.spyOn(eventManager, 'emit');
 
     describe('#getEventHandlers', () => {
       it('should listen to INIT_EVENTS.INIT events', () => {
@@ -60,15 +61,15 @@ describe('configuration-loader', () => {
     });
 
     describe('#handleInit', () => {
-      let statMock: jest.SpyInstance;
+      let statMock: MockInstance;
 
       beforeEach(() => {
-        statMock = jest.spyOn(fs, 'stat');
-        jest.spyOn(fs, 'readFile').mockResolvedValue(fakeConfigFile);
+        statMock = vi.spyOn(fs, 'stat');
+        vi.spyOn(fs, 'readFile').mockResolvedValue(fakeConfigFile);
       });
 
       afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
       });
 
       it('should load the configuration files in the service container and trigger all the events', async () => {
@@ -180,7 +181,7 @@ describe('configuration-loader', () => {
         try {
           await module.handleInit(initEvent);
         } catch (e) {
-          error = e;
+          error = e as Error;
         }
 
         expect(error!).toBeInstanceOf(Error);
@@ -190,4 +191,4 @@ describe('configuration-loader', () => {
       });
     });
   });
-});
+}); 

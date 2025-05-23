@@ -6,6 +6,7 @@ import {
 } from '../helpers';
 import { loadConfig } from '..';
 import { ConfigLoadEvent } from '../events';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 describe('configuration-loader/helpers', () => {
   describe('#injectEnvVariables', () => {
@@ -172,4 +173,4 @@ describe('configuration-loader/helpers', () => {
       ]);
     });
   });
-});
+}); 

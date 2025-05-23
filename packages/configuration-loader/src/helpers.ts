@@ -1,4 +1,4 @@
-import { ConfigLoadEvent } from './events';
+import { ConfigLoadEvent } from './events.js';
 
 const ENV_VARIABLE_REGEXP = /^\$\((.*)\)$/;
 const ENV_VARIABLE_PARAMS_REGEXP = /^([A-Z0-9_]+)(:([a-z]+))?(\?(.*))?$/;
@@ -18,7 +18,7 @@ const TYPE_PROCESSORS = {
 
 type EnvVariableType = keyof typeof TYPE_PROCESSORS;
 
-export function injectEnvVariables(configFilePath: string, config: any, path: string[] = []): any {
+export function injectEnvVariables(configFilePath: string, config: unknown, path: string[] = []): unknown {
   if (typeof config === 'string' || config instanceof String) {
     const firstMatch = ENV_VARIABLE_REGEXP.exec(config as string);
     if (firstMatch) {
@@ -46,7 +46,7 @@ export function injectEnvVariables(configFilePath: string, config: any, path: st
       } catch (e) {
         throw new UnprocessableEnvVariableError(
           `Failed to process env variable at '${path.join('.')}' in '${configFilePath}':\n${
-            e.message
+            (e as Error).message
           }`,
         );
       }
@@ -58,7 +58,7 @@ export function injectEnvVariables(configFilePath: string, config: any, path: st
     );
   }
   if (typeof config === 'object' && !!config) {
-    const configCopy = { ...config };
+    const configCopy: Record<string, unknown> = { ...config };
     Object.entries(configCopy).forEach(([key, value]) => {
       configCopy[key] = injectEnvVariables(configFilePath, value, [...path, key]);
     });
@@ -68,7 +68,7 @@ export function injectEnvVariables(configFilePath: string, config: any, path: st
   return config;
 }
 
-export function loadConfig(fileName: string, validator: Function) {
+export function loadConfig(fileName: string, validator: (configPath: string, config: unknown) => unknown) {
   return (loadEvent: ConfigLoadEvent) => {
     loadEvent.addConfig({ fileName, validator });
   };

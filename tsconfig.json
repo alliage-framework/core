@@ -1,8 +1,7 @@
 {
-  "extends": "./tsconfig.build.json",
-  "compilerOptions": {
-    "baseUrl": "./packages",
-    "rootDir": "./packages",
-  },
-  "exclude": [],
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.project.json" },
+    { "path": "./tsconfig.test.json" },
+  ]
 }

@@ -1,5 +1,6 @@
 import { INITIALIZATION_CONTEXT, Arguments, PrimitiveContainer } from '@alliage/framework';
 import { ServiceContainer } from '@alliage/di';
+import { describe, it, expect, vi } from 'vitest';
 
 import { AbstractLifeCycleAwareModule } from '../module';
 import {
@@ -13,9 +14,9 @@ import {
 describe('lifecycle/module', () => {
   describe('AbstractLifeCycleAwareModule', () => {
     const fakeEventHandler = () => {};
-    const registerServicesMock = jest.spyOn(
+    const registerServicesMock = vi.spyOn(
       AbstractLifeCycleAwareModule.prototype,
-      'registerServices',
+      'registerServices'
     );
 
     class LifeCycleAwareModule extends AbstractLifeCycleAwareModule {
@@ -26,7 +27,7 @@ describe('lifecycle/module', () => {
           [BUILD_EVENTS.BUILD]: fakeEventHandler,
           [RUN_EVENTS.RUN]: fakeEventHandler,
           [RUN_EVENTS.POST_RUN]: undefined,
-        } as any;
+        };
       }
     }
 
@@ -34,7 +35,7 @@ describe('lifecycle/module', () => {
     const pc = new PrimitiveContainer({});
     const sc = new ServiceContainer();
     const eventManagerMock = {
-      on: jest.fn(),
+      on: vi.fn(),
     };
 
     pc.set('service_container', sc);
@@ -81,4 +82,4 @@ describe('lifecycle/module', () => {
       });
     });
   });
-});
+}); 

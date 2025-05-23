@@ -1,6 +1,6 @@
 # Alliage Builder
 
-Provides a build pipeline system for an Alliage application
+A powerful build pipeline system for Alliage applications that streamlines your development workflow.
 
 ## Dependencies
 
@@ -11,26 +11,24 @@ Provides a build pipeline system for an Alliage application
 ## Installation
 
 ```bash
+# Using yarn
 yarn add -D @alliage/builder
-```
 
-With npm
-
-```bash
-npm install --dev @alliage/builder
+# Using npm
+npm install --save-dev @alliage/builder
 ```
 
 ## Registration
 
-If you have already installed [@alliage/module-installer](../module-installer) you just have to run the following command:
+If you've already installed [@alliage/module-installer](../module-installer), simply run:
 
 ```bash
 $(npm bin)/alliage-scripts install @alliage/builder
 ```
 
-Otherwise, update your `alliage-modules.json` file to add this at the bottom:
+Otherwise, update your `alliage-modules.json` file by adding this to the bottom:
 
-```js
+```json
 {
   // ... other modules
   "@alliage/builder": {
@@ -40,19 +38,21 @@ Otherwise, update your `alliage-modules.json` file to add this at the bottom:
       "@alliage/config-loader",
       "@alliage/module-installer"
     ],
-    "envs": ["development"],
+    "envs": ["development"]
   }
 }
 ```
 
 ## Usage
 
-### Create a custom builder
+### Creating a Custom Builder Task
 
-The first thing to benefit from the builder module is to create a task.
-A task is class extending `AbstractTask` and that is registered as a service.
+To leverage the builder module, first create a task by extending the `AbstractTask` class and registering it as a service.
+
+#### JavaScript Example
 
 ```js
+// MyTask.js
 import { AbstractTask } from '@alliage/builder';
 
 export class MyTask extends AbstractTask {
@@ -72,30 +72,99 @@ export class MyTask extends AbstractTask {
   }
 
   async run(params) {
-    console.log(`Param received: ${params.myTaskParam}`);
+    console.log(`Parameter received: ${params.myTaskParam}`);
 
-    // Do building stuff...
+    // Implement your build logic here...
   }
 }
 ```
 
-The task must implement the following method:
+#### TypeScript Example
 
-- `getName(): string`: Must return the name of the task which must be unique among other tasks
-- `getParamsSchema(): object`: Must returns the schema of the parameters that can be sent to the task
-- `run(params: object)`: Must contain the building logic of the task. It receives parameters that will correspond to the schema defined in the `getParamsSchema` method.
+```ts
+// MyTask.ts
+import { AbstractTask } from '@alliage/builder';
+import { FromSchema } from 'json-schema-to-ts';
 
-Once the custom task is created, we must register it as a service.
-If the [@alliage/service-loader](../service-loader) is installed, we just have to use the [Service decorator](../service-loader#define-a-service).
-Otherwise, we must register it in an alliage module.
+export class MyTask extends AbstractTask {
+  getName(): string {
+    return 'my_task';
+  }
+
+  getParamsSchema() {
+    return {
+      type: 'object',
+      properties: {
+        myTaskParam: {
+          type: 'string',
+        },
+      },
+    } as const;
+  }
+
+  async run(params: FromSchema<ReturnType<typeof this.getParamsSchema>>): Promise<void> {
+    console.log(`Parameter received: ${params.myTaskParam}`);
+
+    // Implement your build logic here...
+  }
+}
+```
+
+Your task must implement these methods:
+
+- `getName(): string`: Returns a unique name for the task
+- `getParamsSchema(): object`: Returns the JSON schema for parameters accepted by the task
+- `run(params: object)`: Contains the build logic and receives parameters that conform to the schema
+
+### Registering Your Task as a Service
+
+Once your task is created, register it as a service:
+
+#### With @alliage/service-loader
+
+If you have [@alliage/service-loader](../service-loader) installed, use the Service decorator:
+
+##### JavaScript Example
 
 ```js
+// MyTask.js
+import { AbstractTask } from '@alliage/builder';
+import { Service } from '@alliage/service-loader';
+
+class MyTask extends AbstractTask {
+  // Implementation as shown above
+}
+
+export default Service('my_task')(MyTask);
+```
+
+##### TypeScript Example
+
+```ts
+// MyTask.ts
+import { AbstractTask } from '@alliage/builder';
+import { Service } from '@alliage/service-loader';
+import { FromSchema } from 'json-schema-to-ts';
+
+@Service('my_task')
+export default class MyTask extends AbstractTask {
+  // Implementation as shown above
+}
+```
+
+#### Without @alliage/service-loader
+
+Register the task directly in an Alliage module:
+
+##### JavaScript Example
+
+```js
+// MyModule.js
 import { AbstractLifeCycleAwareModule } from '@alliage/lifecycle';
+import { MyTask } from './MyTask.js';
 
-import { MyTask } from './MyTask';
-
-export = class MyModule extends AbstractLifeCycleAwareModule {
-  // ...
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  // ...other methods
 
   registerServices(serviceContainer) {
     serviceContainer.registerService('my_task', MyTask, []);
@@ -103,40 +172,55 @@ export = class MyModule extends AbstractLifeCycleAwareModule {
 }
 ```
 
+##### TypeScript Example
+
+```ts
+// MyModule.ts
+import { AbstractLifeCycleAwareModule } from '@alliage/lifecycle';
+import { ServiceContainer } from '@alliage/di';
+import { MyTask } from './MyTask.js';
+
+export default class MyModule extends AbstractLifeCycleAwareModule {
+  // ...other methods
+
+  registerServices(serviceContainer: ServiceContainer): void {
+    serviceContainer.registerService('my_task', MyTask, []);
+  }
+}
+```
+
 ### Configuration
 
-Once the task is created we must configure the builder to use our task.
-Everything happens in the `config/builder.yaml` file that should have been created automatically when you installed the builder module.
+Once your task is created, configure the builder to use it in the `config/builder.yaml` file:
 
 ```yaml
 tasks:
-  - name: my_task ## This is a name of the task to execute
-    description: My task ## This is a description of the task (displayed in the terminal)
-    ## These are the parameters sent to the task
-    params:
+  - name: my_task         # Name of the task to execute
+    description: My task  # Description of the task (displayed in the terminal)
+    params:               # Parameters sent to the task
       myTaskParam: foo
 ```
 
-### Run the build
+### Running the Build
 
-Once the tasks to run in the builder have been defined, we can run the build by running the following command:
+Execute the build with the following command:
 
 ```bash
-$(npm bin)/alliage-scripts build
+npx alliage-scripts build
 ```
 
-With the example above, we should get the following output:
+With the example above, you should see:
 
 ```bash
 Running task: My task...
-Param received: foo
+Parameter received: foo
 ```
 
-### Built-in tasks
+### Built-in Tasks
 
 #### ShellTask
 
-The builder modules comes with one built-in which allows us to run shell commands. It can be used the following way:
+The builder module includes a built-in ShellTask for running shell commands:
 
 ```yaml
 tasks:
@@ -152,85 +236,85 @@ tasks:
 
 ## Events
 
-### Builder events
+### Builder Events
 
 ```js
 import { BUILDER_EVENTS } from '@alliage/builder';
 ```
 
-| Type                              | Event object                                              | Description                    |
-| --------------------------------- | --------------------------------------------------------- | ------------------------------ |
-| `BUILDER_EVENTS.BEFORE_ALL_TASKS` | [BuilderBeforeAllTasksEvent](#builderbeforealltasksevent) | Before running all the tasks   |
-| `BUILDER_EVENTS.BEFORE_TASK`      | [BuilderBeforeTaskEvent](#builderbeforetaskevent)         | Before running one task        |
-| `BUILDER_EVENTS.AFTER_TASK`       | [BuilderAfterTaskEvent](#builderaftertaskevent)           | After having run one task      |
-| `BUILDER_EVENTS.AFTER_ALL_TASKS`  | [BuilderAfterAllTasksEvent](#builderafteralltasksevent)   | After having run all the tasks |
+| Event Type | Event Object | Description |
+|------------|--------------|-------------|
+| `BUILDER_EVENTS.BEFORE_ALL_TASKS` | [BuilderBeforeAllTasksEvent](#builderbeforealltasksevent) | Triggered before running all tasks |
+| `BUILDER_EVENTS.BEFORE_TASK` | [BuilderBeforeTaskEvent](#builderbeforetaskevent) | Triggered before running a specific task |
+| `BUILDER_EVENTS.AFTER_TASK` | [BuilderAfterTaskEvent](#builderaftertaskevent) | Triggered after running a specific task |
+| `BUILDER_EVENTS.AFTER_ALL_TASKS` | [BuilderAfterAllTasksEvent](#builderafteralltasksevent) | Triggered after running all tasks |
 
 #### BuilderBeforeAllTasksEvent
 
-This is the instance of the event object received in any `BUILDER_EVENTS.BEFORE_ALL_TASKS` listener.
+This event object is received in any `BUILDER_EVENTS.BEFORE_ALL_TASKS` listener.
 
-- `getConfig(): object`: Returns the configuration of the builder
-- `getTasks(): { [name: string]: AbstractTask }`: Returns the available tasks
-- `setConfig(config: object): BuilderBeforeAllTasksEvent`: Allows to re-define the builder configuration
+- `getConfig(): object`: Returns the builder configuration
+- `getTasks(): { [name: string]: AbstractTask }`: Returns available tasks
+- `setConfig(config: object): BuilderBeforeAllTasksEvent`: Redefines the builder configuration
 
 #### BuilderBeforeTaskEvent
 
-This is the instance of the event object received in any `BUILDER_EVENTS.BEFORE_TASK` listener.
+This event object is received in any `BUILDER_EVENTS.BEFORE_TASK` listener.
 
-- `getTask(): AbstractTask`: Returns the task about to be run
-- `getParams(): object`: Returns the params that will be sent to the task about to be run
-- `getDescription(): string`: Returns the description of the task about to be run
-- `setParams(params: object): BuilderBeforeTaskEvent`: Allows to re-define the params that will be sent to the task about to be run
-- `setDescription(description: string): BuilderBeforeTaskEvent`: Allows to re-define the description of the task about to be run
+- `getTask(): AbstractTask`: Returns the task about to run
+- `getParams(): object`: Returns the parameters for the task
+- `getDescription(): string`: Returns the task description
+- `setParams(params: object): BuilderBeforeTaskEvent`: Redefines the task parameters
+- `setDescription(description: string): BuilderBeforeTaskEvent`: Redefines the task description
 
 #### BuilderAfterTaskEvent
 
-This is the instance of the event object received in any `BUILDER_EVENTS.AFTER_TASK` listener.
+This event object is received in any `BUILDER_EVENTS.AFTER_TASK` listener.
 
-- `getTask(): AbstractTask`: Returns the task that has been run
-- `getParams(): object`: Returns the params that will be sent to the task that has been run
-- `getDescription(): string`: Returns the description of the task that has been run
+- `getTask(): AbstractTask`: Returns the task that was run
+- `getParams(): object`: Returns the parameters sent to the task
+- `getDescription(): string`: Returns the description of the task
 
 #### BuilderAfterAllTasksEvent
 
-This is the instance of the event object received in any `BUILDER_EVENTS.AFTER_ALL_TASKS` listener.
+This event object is received in any `BUILDER_EVENTS.AFTER_ALL_TASKS` listener.
 
-- `getConfig(): object`: Returns the configuration of the builder
-- `getTasks(): { [name: string]: AbstractTask }`: Returns the available tasks
+- `getConfig(): object`: Returns the builder configuration
+- `getTasks(): { [name: string]: AbstractTask }`: Returns available tasks
 
-### Shell task events
+### Shell Task Events
 
 ```js
 import { BUILDER_SHELL_TASK_EVENTS } from '@alliage/builder';
 ```
 
-| Type                                   | Event object                                        | Description                   |
-| -------------------------------------- | --------------------------------------------------- | ----------------------------- |
-| `BUILDER_SHELL_TASK_EVENTS.BEFORE_RUN` | [ShellTaskBeforeRunEvent](#shelltaskbeforerunevent) | Before running the shell task |
-| `BUILDER_SHELL_TASK_EVENTS.SUCCESS`    | [ShellTaskSuccessEvent](#shelltasksuccessevent)     | After a successful run        |
-| `BUILDER_SHELL_TASK_EVENTS.ERROR`      | [ShellTaskErrorEvent](#shelltaskerrorevent)         | After a failed run            |
+| Event Type | Event Object | Description |
+|------------|--------------|-------------|
+| `BUILDER_SHELL_TASK_EVENTS.BEFORE_RUN` | [ShellTaskBeforeRunEvent](#shelltaskbeforerunevent) | Triggered before running the shell task |
+| `BUILDER_SHELL_TASK_EVENTS.SUCCESS` | [ShellTaskSuccessEvent](#shelltasksuccessevent) | Triggered after a successful shell task run |
+| `BUILDER_SHELL_TASK_EVENTS.ERROR` | [ShellTaskErrorEvent](#shelltaskerrorevent) | Triggered after a failed shell task run |
 
 #### ShellTaskBeforeRunEvent
 
-This is the instance of the event object received in any `BUILDER_SHELL_TASK_EVENTS.BEFORE_RUN` listener.
+This event object is received in any `BUILDER_SHELL_TASK_EVENTS.BEFORE_RUN` listener.
 
-- `getCommand(): string`: Returns the command about to be run
-- `setCommand(command: string): ShellTaskBeforeRunEvent`: Allow to re-define the command about to be run
+- `getCommand(): string`: Returns the command about to run
+- `setCommand(command: string): ShellTaskBeforeRunEvent`: Redefines the command
 
 #### ShellTaskSuccessEvent
 
-This is the instance of the event object received in any `BUILDER_SHELL_TASK_EVENTS.SUCCESS` listener.
+This event object is received in any `BUILDER_SHELL_TASK_EVENTS.SUCCESS` listener.
 
-- `getCommand(): string`: Returns the command that has been run
+- `getCommand(): string`: Returns the command that was run
 - `getSuccessOutput(): string`: Returns the standard output
 - `getErrorOutput(): string`: Returns the error output
 
 #### ShellTaskErrorEvent
 
-This is the instance of the event object received in any `BUILDER_SHELL_TASK_EVENTS.ERROR` listener.
+This event object is received in any `BUILDER_SHELL_TASK_EVENTS.ERROR` listener.
 
-- `getCommand(): string`: Returns the command that has been run
-- `getError(): CommandError`: Returns the error which has the following properties:
+- `getCommand(): string`: Returns the command that was run
+- `getError(): CommandError`: Returns the error with these properties:
   - `stdout (string)`: The standard output
   - `stderr (string)`: The error output
   - `error: (ExecException)`: The native error

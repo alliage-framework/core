@@ -55,7 +55,9 @@ export class AbstractEvent<E, P extends object = object> {
     return Object.freeze(this.payload);
   }
 
-  static getParams(...args: any[]): [string, AbstractEvent<any, any>] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static getParams(...args: unknown[]): [string, AbstractEvent<any, any>] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const event = new (this as any)(...args);
     return [event.getType(), event];
   }

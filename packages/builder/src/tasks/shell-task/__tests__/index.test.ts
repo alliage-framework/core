@@ -1,4 +1,5 @@
 import { exec } from 'child_process';
+import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
 
 import { EventManager } from '@alliage/lifecycle';
 
@@ -10,10 +11,10 @@ import {
   BUILDER_SHELL_TASK_EVENTS,
 } from '../events';
 
-jest.mock('child_process', () => {
+vi.mock('child_process', () => {
   return {
-    ...jest.requireActual('child_process'),
-    exec: jest.fn(),
+    ...vi.importActual('child_process'),
+    exec: vi.fn(),
   };
 });
 
@@ -32,6 +33,8 @@ describe('builder/tasks/shell-task', () => {
       it('should return a schema expecting a an object with a string "cmd" property', () => {
         expect(task.getParamsSchema()).toEqual({
           type: 'object',
+          additionalProperties: false,
+          required: ['cmd'],
           properties: {
             cmd: {
               type: 'string',
@@ -42,21 +45,23 @@ describe('builder/tasks/shell-task', () => {
     });
 
     describe('#run', () => {
-      const execMock = (exec as unknown) as jest.Mock;
-      const beforeRunHandler = jest.fn();
-      const successHandler = jest.fn();
-      const errorHandler = jest.fn();
+      const execMock = exec as unknown as ReturnType<typeof vi.fn>;
+      const beforeRunHandler = vi.fn();
+      const successHandler = vi.fn();
+      const errorHandler = vi.fn();
 
-      eventManager.on(BUILDER_SHELL_TASK_EVENTS.BEFORE_RUN, beforeRunHandler);
-      eventManager.on(BUILDER_SHELL_TASK_EVENTS.SUCCESS, successHandler);
-      eventManager.on(BUILDER_SHELL_TASK_EVENTS.ERROR, errorHandler);
+      beforeAll(() => {
+        eventManager.on(BUILDER_SHELL_TASK_EVENTS.BEFORE_RUN, beforeRunHandler);
+        eventManager.on(BUILDER_SHELL_TASK_EVENTS.SUCCESS, successHandler);
+        eventManager.on(BUILDER_SHELL_TASK_EVENTS.ERROR, errorHandler);
+      });
 
       afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
       });
 
       it('should exec the command and trigger events', async () => {
-        execMock.mockImplementationOnce((_cmd: string, callback: Function) => {
+        (execMock as any).mockImplementationOnce((_cmd: string, callback: Function) => {
           callback(null, 'test_stdout', 'test_stderr');
         });
 
@@ -83,7 +88,7 @@ describe('builder/tasks/shell-task', () => {
 
       it('should throw an error in case of command failure and trigger events', async () => {
         const execError = new Error('test_error_message');
-        execMock.mockImplementationOnce((_cmd: string, callback: Function) => {
+        (execMock as any).mockImplementationOnce((_cmd: string, callback: Function) => {
           callback(execError, 'test_stdout', 'test_stderr');
         });
 
@@ -117,4 +122,4 @@ describe('builder/tasks/shell-task', () => {
       });
     });
   });
-});
+}); 

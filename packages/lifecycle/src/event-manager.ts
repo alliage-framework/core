@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EventListener = (...args: any[]) => void | Promise<void>;
 
 export class EventManager {
@@ -12,13 +13,13 @@ export class EventManager {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async emit(type: string, ...args: any[]) {
     const listeners = this.events[type];
     if (!listeners) {
       return;
     }
     for (const listener of listeners) {
-      // eslint-disable-next-line no-await-in-loop
       await listener(...args);
     }
   }

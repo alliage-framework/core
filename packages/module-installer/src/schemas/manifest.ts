@@ -1,15 +1,17 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
+import { asConst, FromSchema, JSONSchema } from 'json-schema-to-ts';
 
-import { ManifestValidationError } from '.';
+import { ManifestValidationError } from './index.js';
 
 export enum MODULE_TYPE {
   COMPOUND = 'compound',
   MODULE = 'module',
 }
 
-export const schema = {
+export const schema = asConst({
   type: 'object',
   required: ['type', 'dependencies'],
+  additionalProperties: false,
   properties: {
     type: {
       type: 'string',
@@ -28,21 +30,18 @@ export const schema = {
       },
     },
   },
-};
+});
 
-export type Manifest<T = { [key: string]: any }> = {
-  dependencies: string[];
-  environments?: string[];
-  type: MODULE_TYPE;
+export type Manifest<T = { [key: string]: FromSchema<JSONSchema> }> = FromSchema<typeof schema> & {
   installationProcedures: T;
 };
 
 export function validate(
   moduleName: string,
   manifest: object,
-  installationProceduresSchema: object = {},
+  installationProceduresSchema: Record<string, JSONSchema> = {},
 ) {
-  const ajv = new Ajv({ allErrors: true, strictKeywords: true, logger: false });
+  const ajv = new Ajv({ allErrors: true, strictSchema: true, logger: false });
   const res = ajv.validate(
     {
       ...schema,

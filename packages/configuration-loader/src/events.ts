@@ -19,7 +19,7 @@ export abstract class AbstractConfigEvent<P extends object = object> extends Abs
   P
 > {}
 
-export type Config = { fileName: string; validator: Function };
+export type Config = { fileName: string; validator: (configPath: string, config: unknown) => unknown };
 
 export interface ConfigPreLoadEventPayload {
   configPath: string;
@@ -131,10 +131,16 @@ export class ConfigPreFileParseEvent extends AbstractConfigEvent<ConfigPreFilePa
   }
 }
 
+interface ConfigObject {
+  [key: string]: ConfigValue;
+}
+
+type ConfigValue = string | number | boolean | ConfigObject | ConfigValue[];
+
 export interface ConfigPostFileParseEventPayload {
   fileName: string;
   filePath: string;
-  config: object;
+  config: ConfigObject;
 }
 
 export abstract class AbstractConfigPostFileParseEvent extends AbstractConfigEvent<
@@ -152,20 +158,20 @@ export abstract class AbstractConfigPostFileParseEvent extends AbstractConfigEve
     return this.getWritablePayload().config;
   }
 
-  setConfig(config: object) {
+  setConfig(config: ConfigObject) {
     this.getWritablePayload().config = config;
     return this;
   }
 }
 
 export class ConfigPostFileParseEvent extends AbstractConfigPostFileParseEvent {
-  constructor(fileName: string, filePath: string, config: object) {
+  constructor(fileName: string, filePath: string, config: ConfigObject) {
     super(CONFIG_EVENTS.POST_FILE_PARSE, { fileName, filePath, config });
   }
 }
 
 export class ConfigPostEnvVariableInjectionEvent extends AbstractConfigPostFileParseEvent {
-  constructor(fileName: string, filePath: string, config: object) {
+  constructor(fileName: string, filePath: string, config: ConfigObject) {
     super(CONFIG_EVENTS.POST_ENV_VARIABLES_INJECTION, { fileName, filePath, config });
   }
 }

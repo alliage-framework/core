@@ -1,6 +1,9 @@
+import { asConst, FromSchema } from 'json-schema-to-ts';
+
 export const CONFIG_NAME = 'services';
-export const schema = {
+export const schema = asConst({
   type: 'object',
+  additionalProperties: false,
   required: ['basePath', 'paths'],
   properties: {
     basePath: {
@@ -19,10 +22,6 @@ export const schema = {
       },
     },
   },
-};
+});
 
-export interface Config {
-  basePath: 'string';
-  paths: string[];
-  exclude?: string[];
-}
+export type Config = FromSchema<typeof schema>;

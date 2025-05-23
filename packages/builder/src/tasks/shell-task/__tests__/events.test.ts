@@ -1,4 +1,5 @@
 import { ExecException } from 'child_process';
+import { describe, it, expect } from 'vitest';
 
 import {
   BUILDER_SHELL_TASK_EVENTS,
@@ -112,4 +113,4 @@ describe('builder/tasks/shell-tasks/events', () => {
       });
     });
   });
-});
+}); 

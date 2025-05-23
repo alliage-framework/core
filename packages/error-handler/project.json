@@ -1,0 +1,8 @@
+{
+  "name": "@alliage/error-handler",
+  "targets": {
+    "build": {},
+    "clean": {},
+    "update-manifest": {}
+  }
+}

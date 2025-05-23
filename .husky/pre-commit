@@ -1,13 +1,2 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-HEAD_VERSION=$(git show HEAD:lerna.json | jq -r .version)
-CURRENT_VERSION=$(cat lerna.json | jq -r .version)
-
-if [ $HEAD_VERSION != $CURRENT_VERSION ]; then
-  lerna exec -- bash "\$LERNA_ROOT_PATH/scripts/update-peer-deps.sh"
-fi
-
-lerna exec -- bash "\$LERNA_ROOT_PATH/scripts/update-manifest.sh"
-
+nx run-many --target=update-manifest --all --parallel
 git add .

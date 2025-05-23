@@ -1,10 +1,11 @@
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { CommandBuilder, Arguments } from '@alliage/framework';
 
 import { AbstractProcess } from '../process';
 
 describe('process-manager/process', () => {
   describe('AbstractProcess', () => {
-    const executeMock = jest.fn();
+    const executeMock = vi.fn();
 
     class Process extends AbstractProcess {
       getName() {
@@ -20,7 +21,7 @@ describe('process-manager/process', () => {
     const process = new Process();
 
     afterEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     describe('#configure', () => {
@@ -54,4 +55,4 @@ describe('process-manager/process', () => {
       });
     });
   });
-});
+}); 

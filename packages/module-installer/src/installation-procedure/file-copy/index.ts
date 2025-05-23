@@ -1,23 +1,40 @@
 import path from 'path';
-import glob from 'glob';
-import fse from 'fs-extra';
+import { glob } from 'glob';
+import * as fse from 'fs-extra';
+import { asConst, FromSchema } from 'json-schema-to-ts';
 
 import { EventManager } from '@alliage/lifecycle';
 
-import { AbstractInstallationProcedure } from '..';
-import { Manifest } from '../../schemas/manifest';
+import { AbstractInstallationProcedure } from '../abstract-installation-procedure.js';
+import { Manifest } from '../../schemas/manifest.js';
 import {
   FileCopyBeforeCopyAllEvent,
   FileCopyAfterCopyAllEvent,
   FileCopyBeforeCopyFileEvent,
   FileCopyAfterCopyFileEvent,
-} from './events';
+} from './events.js';
 
 export const PROCEDURE_NAME = '@module-installer/INSTALLATION_PROCEDURE/FILE_COPY';
 
-export type FileCopyManifest = {
-  copyFiles?: [string, string][];
-};
+const schema = asConst({
+  type: 'array',
+  items: {
+    type: 'array',
+    items: [
+      {
+        type: 'string',
+        description: 'Source',
+      },
+      {
+        type: 'string',
+        description: 'Destination',
+      },
+    ],
+    minItems: 2,
+    maxItems: 2,
+    additionalItems: false
+  },
+});
 
 export class FileCopyInstallationProcedure extends AbstractInstallationProcedure {
   private eventManager: EventManager;
@@ -28,31 +45,14 @@ export class FileCopyInstallationProcedure extends AbstractInstallationProcedure
   }
 
   getName() {
-    return PROCEDURE_NAME;
+    return 'copyFiles';
   }
 
-  getSchema() {
-    return {
-      copyFiles: {
-        type: 'array',
-        items: {
-          type: 'array',
-          items: [
-            {
-              type: 'string',
-              description: 'Source',
-            },
-            {
-              type: 'string',
-              description: 'Destination',
-            },
-          ],
-        },
-      },
-    };
+  getParamsSchema() {
+    return schema;
   }
 
-  async proceed(manifest: Manifest<FileCopyManifest>, modulePath: string) {
+  async proceed(manifest: Manifest<{ copyFiles: FromSchema<typeof schema> }>, modulePath: string) {
     const filesToCopy = manifest.installationProcedures.copyFiles;
     if (filesToCopy) {
       const copiedFiles: [string, string][] = [];
@@ -61,15 +61,7 @@ export class FileCopyInstallationProcedure extends AbstractInstallationProcedure
       const computedModulePath = beforeCopyAllEvent.getModulePath();
       await Promise.all(
         beforeCopyAllEvent.getFilesToCopy().map(async ([source, destination]) => {
-          const files: string[] = await new Promise((resolve, reject) => {
-            glob(`${computedModulePath}/${source}`, (err, matches) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(matches);
-            });
-          });
+          const files = await glob(`${computedModulePath}/${source}`);
           await Promise.all(
             files.map(async (sourceFile) => {
               const absoluteDestination = path.resolve(destination);
@@ -107,4 +99,4 @@ export class FileCopyInstallationProcedure extends AbstractInstallationProcedure
   }
 }
 
-export * from './events';
+export * from './events.js';

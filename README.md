@@ -1,18 +1,38 @@
-# Alliage core
+# Alliage Core
 
-Monorepo containing all the core features of the [Alliage framework](https://github.com/alliage-framework/framework).
 
-## Documentation
+This repository contains the core modules of the [Alliage framework](https://github.com/alliage-framework/framework), providing essential functionality for building robust Node.js applications.
 
-You'll find the documentation of each modules in the links below:
+## 🚀 Features
 
-- [Dependency injection](packages/dependency-injection)
-- [Lifecycle](packages/lifecycle)
-- [Module installer](packages/module-installer)
-- [Error handler](packages/error-handler)
-- [Configuration loader](packages/configuration-loader)
-- [Parameters loader](packages/parameters-loader)
-- [Service loader](packages/service-loader)
-- [Process manager](packages/process-manager)
-- [Events listener loader](packages/events-listener-loader)
-- [Builder](packages/builder)
+- **Modular Architecture**: Build your application with composable modules
+- **Dependency Injection**: Powerful DI container for managing services
+- **Lifecycle Events**: Extended event system with priorities and async support
+- **Configuration Management**: Flexible configuration loading and validation
+- **Error Handling**: Comprehensive error management
+- **And much more!**
+
+## 📦 Core Modules
+
+| Module | Description |
+|--------|-------------|
+| [Dependency Injection](packages/dependency-injection) | Powerful container for managing services and their dependencies |
+| [Lifecycle](packages/lifecycle) | Enhanced event system with priorities and async support |
+| [Module Installer](packages/module-installer) | Handles installation procedures for modules |
+| [Error Handler](packages/error-handler) | Manages error detection, formatting, and reporting |
+| [Configuration Loader](packages/configuration-loader) | Loads and validates configuration from various sources |
+| [Parameters Loader](packages/parameters-loader) | Manages application parameters |
+| [Service Loader](packages/service-loader) | Automatic service discovery and registration |
+| [Process Manager](packages/process-manager) | Manages application processes |
+| [Events Listener Loader](packages/events-listener-loader) | Automatic event listener discovery and registration |
+| [Builder](packages/builder) | Build tools for your application |
+
+## 📋 Requirements
+
+- Node.js 16.x or higher
+- npm or yarn
+
+## 📚 Documentation
+
+For detailed documentation on each module, click the module names in the table above.
+

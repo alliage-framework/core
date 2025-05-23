@@ -10,7 +10,7 @@ export default class ErrorHandlerModule extends AbstractModule {
     };
   }
 
-  displayError = (error: any) => {
+  displayError = (error: unknown) => {
     if (error instanceof Error) {
       const errorType = (error.constructor && error.constructor.name) || 'Error';
       const message = error.message || 'An unknown error occured';
@@ -20,6 +20,7 @@ export default class ErrorHandlerModule extends AbstractModule {
         .filter((p: string) => !EXCLUDED_PROPERTIES.includes(p))
         .forEach((p: string) => {
           console.error(chalk.blue.underline(`${p}:`));
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           console.error((error as any)[p], '\n');
         });
       console.error(chalk.blue.underline('stack trace:'));

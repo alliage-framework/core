@@ -10,6 +10,7 @@
     "dist",
     "LICENSE"
   ],
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alliage-framework/core.git"
+    "url": "https://github.com/alliage-framework/core.git"
   },
   "author": "bo.lebon@gmail.com",
   "license": "GNU",
@@ -34,6 +35,9 @@
     "@alliage/framework": "^1.0.0-beta.3"
   },
   "dependencies": {
-    "chalk": "^4.1.0"
+    "chalk": "^5.4.1"
+  },
+  "devDependencies": {
+    "json-schema-to-ts": "^3.1.1"
   }
 }
