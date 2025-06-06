@@ -38,16 +38,16 @@
         "createRelease": "github"
       }
     },
-    "git": {
-      "commitMessageFormat": "chore(release): publish v{version}",
-      "tagName": "{version}",
-      "commitArgs": "--no-verify"
-    },
     "projectsRelationship": "fixed",
     "version": {
       "conventionalCommits": true,
-      "versionPrefix": "",
-      "fallbackCurrentVersionResolver": "disk"
+      "versionPrefix": "auto",
+      "fallbackCurrentVersionResolver": "disk",
+      "git": {
+        "commitMessageFormat": "chore(release): publish v{version}",
+        "tagName": "{version}",
+        "commitArgs": "--no-verify"
+      },
     }
   }
 }

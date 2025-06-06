@@ -41,8 +41,10 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/beta" ]
           then
             echo "Beta release:"
-            yarn release --specifier prerelease --preid beta --yes
+            yarn release version prerelease --preid beta
+            yarn release publish --tag beta --yes
           else
             echo "Main release:"
-            yarn release --yes
+            yarn release version
+            yarn release publish --yes
           fi
