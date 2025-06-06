@@ -29,7 +29,7 @@ This repository contains the core modules of the [Alliage framework](https://git
 
 ## 📋 Requirements
 
-- Node.js 16.x or higher
+- Node.js 20.x or higher
 - npm or yarn
 
 ## 📚 Documentation

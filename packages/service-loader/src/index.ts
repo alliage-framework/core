@@ -18,6 +18,7 @@ import {
   ServiceLoaderBeforeOneEvent,
   ServiceLoaderAfterOneEvent,
 } from './events.js';
+import { pathToFileURL } from 'url';
 
 export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
   getEventHandlers() {
@@ -55,7 +56,7 @@ export default class ServiceLoaderModule extends AbstractLifeCycleAwareModule {
         });
         await Promise.all(
           files.map(async (file) => {
-            const module = await import(file);
+            const module = await import(pathToFileURL(file).href);
             const service = module.default ?? module;
             const definition = extractServiceDefinition(service);
             if (!definition) {
