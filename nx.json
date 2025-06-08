@@ -41,7 +41,7 @@
     "projectsRelationship": "fixed",
     "version": {
       "conventionalCommits": true,
-      "versionPrefix": "auto",
+      "versionPrefix": "^",
       "fallbackCurrentVersionResolver": "disk",
       "git": {
         "commitMessageFormat": "chore(release): publish v{version}",

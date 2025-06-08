@@ -1,3 +1,19 @@
+## 0.1.0-beta.8 (2025-06-08)
+
+### 🚀 Features
+
+- trigger release ([b31327e](https://github.com/alliage-framework/core/commit/b31327e))
+
+### 🩹 Fixes
+
+- **events-listener-loader:** fix typing issue ([#8](https://github.com/alliage-framework/core/pull/8))
+- **service-loader:** Convert module's path to file URL before importing it ([#7](https://github.com/alliage-framework/core/pull/7))
+
+### ❤️ Thank You
+
+- bolebon
+- Boris Lebon
+
 ## 0.1.0-beta.6 (2025-05-23)
 
 ### 🩹 Fixes

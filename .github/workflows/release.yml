@@ -42,9 +42,11 @@ jobs:
           then
             echo "Beta release:"
             yarn release version prerelease --preid beta
+            yarn release changelog $(node -p "require('./packages/lifecycle/package.json').version") --yes
             yarn release publish --tag beta --yes
           else
             echo "Main release:"
             yarn release version
+             yarn release changelog $(node -p "require('./packages/lifecycle/package.json').version") --yes
             yarn release publish --yes
           fi
